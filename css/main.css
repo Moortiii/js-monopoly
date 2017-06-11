@@ -1,0 +1,42 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  background: #333;
+}
+.cell {
+  margin: 0!important;
+  padding: 0!important;
+  border: 3px solid #fff;
+  width: 90px;
+  height: 75px;
+}
+.container {
+  display: flex;
+  justify-content: center;
+}
+.colorfield {
+  height: 10px;
+}
+.red {
+  border-top: 15px solid #e74c3c;
+}
+.brown {
+  border-top: 15px solid #8e44ad;
+}
+.light-blue {
+  border-top: 15px solid #3498db;
+}
+.pink {
+  border-top: 15px solid #ff4290;
+}
+.orange {
+  border-top: 15px solid #e67e22;
+}
+.title {
+  font-family: 'Georgia', sans-serif;
+  font-size: 14px;
+  text-align: center;
+  padding: 5px;
+  color: #e3e3e3;
+}

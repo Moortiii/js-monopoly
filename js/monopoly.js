@@ -18,22 +18,55 @@ function returnProperty(position) {
 }
 
 // Lets the user buy property and then marks it as sold and adds the user as the owner
+// function buyPropertyOld(player, position) {
+//   var targetProperty = returnProperty(position);
+//   var propertyName = targetProperty.name;
+//   var propertyPrice = targetProperty.price;
+//
+//   for(key in properties) {
+//     for(var i = 0; i < properties[key].length; i++) {
+//       if(properties[key][i].name == propertyName) {
+//         if(player.cash >= propertyPrice && properties[key][i].sold != true) {
+//           removeCash(player, propertyPrice);
+//           player.properties.push(properties[key][i]);
+//           properties[key][i].sold = true;
+//           properties[key][i].owner = player;
+//         }
+//       }
+//     }
+//   }
+// }
+
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
   var propertyName = targetProperty.name;
   var propertyPrice = targetProperty.price;
 
-  for(key in properties) {
-    for(var i = 0; i < properties[key].length; i++) {
-      if(properties[key][i].name == propertyName) {
-        if(player.cash >= propertyPrice && properties[key][i].sold != true) {
-          removeCash(player, propertyPrice);
-          player.properties.push(properties[key][i]);
-          properties[key][i].sold = true;
-          properties[key][i].owner = player;
-        }
-      }
-    }
+  if(player.cash >= propertyPrice && targetProperty.sold != true) {
+    removeCash(player, propertyPrice);
+    player.properties.push(targetProperty);
+    targetProperty.sold = true;
+    targetProperty.owner = player;
+  }
+}
+
+function mortgageProperty(player, position) {
+  var targetProperty = returnProperty(position);
+  var mortgagePrice = targetProperty.mortgage_value;
+
+  if(targetProperty.owner == player && targetProperty.mortgaged != true) {
+    addCash(player, mortgagePrice);
+    targetProperty.mortgaged = true;
+  }
+}
+
+function unMortgageProperty(player, position) {
+  var targetProperty = returnProperty(position);
+  var mortgagePrice = targetProperty.mortgage_value;
+
+  if(targetProperty.owner == player && targetProperty.mortgaged == true) {
+    removeCash(player, mortgagePrice);
+    targetProperty.mortgaged = false;
   }
 }
 
@@ -65,15 +98,35 @@ function getLandingPrice(player) {
 }
 
 function landOnProperty(player, owner) {
-  if(player != owner) {
-    console.log("You landed on: " + owner.name + "'s property");
-    var targetProperty = returnProperty(player.position);
+  var targetProperty = returnProperty(player.position);
+  if(player != owner && targetProperty.mortgaged != true) {
     var owner = targetProperty.owner;
     var price = getLandingPrice(player);
     removeCash(player, price);
     addCash(owner, price);
+    console.log("You landed on: " + owner.name + "'s property");
     console.log("You pay: $" + price + " to stay there");
     console.log("You have: $" + player.cash + " left.");
+  }
+}
+
+// TO:DO Create discard pile..
+function drawChanceCard(player) {
+  var position = player.position;
+  var chanceCard
+  var randomCardIndex = Math.floor(Math.random() * chanceCards.cards.length);
+  var chanceCard = chanceCards.cards[randomCardIndex];
+  if(position == 7 || position == 22 || position == 36 && chanceCard.used != true) {
+    console.log("You drew: " + chanceCard.name);
+    console.log("Description: " + chanceCard.description);
+    chanceCard.action(player);
+    chanceCard.used = true;
+  }
+}
+
+function shuffleChanceCards() {
+  for(var i = 0; i < chanceCards.cards.length; i++) {
+    chanceCards.cards[i].used = false;
   }
 }
 
@@ -134,10 +187,11 @@ function getNewPosition(player) {
     landOnProperty(player, owner);
   }
   payTax(player);
-  if(snakeEyes) {
-    console.log("Snake eyes!");
-    getNewPosition(player);
-  }
+  drawChanceCard(player);
+  // if(snakeEyes) {
+  //   console.log("Snake eyes!");
+  //   getNewPosition(player);
+  // }
 }
 
 function payTax(player) {
@@ -168,13 +222,13 @@ function transferCash(player1, player2, amount) {
 
 // Receive $200 if you pass start
 function passStart(player) {
-  console.log("You pass start, receive 200");
+  console.log("You pass start, receive $200");
   addCash(player, 200);
 }
 
 // Receive $400 if you land on start
 function landOnStart(player) {
-  console.log("You pass start, receive 400");
+  console.log("You land on start, receive $400");
   addCash(player, 400);
 }
 
@@ -203,17 +257,19 @@ function isNormalStreet(position) {
 }
 
 // The functions below are for testing purposes only
-
 function buyAllStreets(player) {
   var streets = generateStreetPositions();
   for(var i = 0; i < streets.length; i++) {
     // Buy all the properties
     buyUnsoldProperty(player, streets[i]);
+    buyUnsoldProperty(player, 12);
+    buyUnsoldProperty(player, 28);
 
     // Buy three houses on all of them
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
+    mortgageProperty(player, streets[i]);
   }
 }
 

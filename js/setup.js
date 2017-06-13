@@ -1,17 +1,21 @@
-// Generate punish blocks etc.
-
-function Tax(name, price, position) {
-  this.name = name;
-  this.price = price;
-  this.position = position;
-}
-
 // Generic function to create a new player with certain properties.
 function Player(name, cash, position, properties) {
   this.name = name;
   this.cash = cash;
   this.position = position;
   this.properties = properties;
+}
+
+// Constructor for the tax-properties
+function Tax(name, price, position) {
+  this.name = name;
+  this.price = price;
+  this.position = position;
+}
+
+function chanceProperty(name, position) {
+  this.name = name;
+  this.position = position;
 }
 
 // Functions to create the properties, stations and utilites
@@ -50,10 +54,57 @@ function Utility(name, position, owns_1_multiplier, owns_2_multiplier, mortgage_
   this.price = price;
 }
 
+function ChanceCard(name, description, action) {
+  this.name = name;
+  this.description = description;
+  this.action = action;
+}
+
 // Create the players for the game
 var players = {
-  player_1: new Player("Morten", 500000, 0, []),
+  player_1: new Player("Morten", 4190, 0, []),
   player_2: new Player("Kjetil", 3000, 0, [])
+};
+
+var chanceCards = {
+  cards: [
+    new ChanceCard("Up-up and away we go", "Advance to start and collect $400", function(player) {
+      player.position = 0
+      landOnStart(player);
+    }),
+    new ChanceCard("Moving on...", "Advance to Trafalgar Square. - If you pass start, collect $200", function(player) {
+      var targetProperty = returnProperty(24); // Trafalgar Square is at position 24
+      if(player.position > targetProperty.position) {
+        passStart(player);
+      }
+      player.position = targetProperty.position;
+    }),
+    new ChanceCard("Moving on...", "Advance to Northumberland Road. - If you pass start, collect $200", function(player) {
+      var targetProperty = returnProperty(14); // Trafalgar Square is at position 24
+      if(player.position > targetProperty.position) {
+        passStart(player);
+      }
+      player.position = targetProperty.position;
+    }),
+    new ChanceCard("Goddamn Electricity", "Advance to the nearest Utility. If unowned you may buy it from the Bank. If owned, throw dice and pay owner a total ten times the amount thrown", function(player) {
+      var position = player.position;
+      var targetProperty;
+      if(position < 22) {
+        targetProperty = returnProperty(28);
+      } else {
+        targetProperty = returnProperty(12);
+      }
+      var propertyOwner = targetProperty.owner;
+      if(propertyOwner != player) {
+        var dice = Math.floor((Math.random() * 6) + 1);
+        var amountToPay = dice * 10;
+        removeCash(player, amountToPay);
+        addCash(propertyOwner, amountToPay);
+        console.log("You rolled: " + dice);
+        console.log("You pay " + propertyOwner.name + " $" + amountToPay);
+      }
+    })
+  ]
 };
 
 // Define each of the properties, stations and utilities explicitly.
@@ -109,5 +160,10 @@ var properties = {
   tax: [
     new Tax("Super Tax", 200, 38),
     new Tax("Income Tax", 100, 4)
+  ],
+  chance: [
+    new chanceProperty("Chance Red", 7),
+    new chanceProperty("Chance Blue", 22),
+    new chanceProperty("Chance Yellow", 36)
   ]
 };

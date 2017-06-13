@@ -1,3 +1,8 @@
+//TO:DO Mortgage properties
+//TO:DO Add community chests
+//TO:DO Add chance cards
+//TO:DO Add jail system
+
 // Returns a property object given an arbitrary position
 function returnProperty(position) {
   var property = Object.values(properties);
@@ -10,32 +15,6 @@ function returnProperty(position) {
     }
   }
   return propertyObject;
-}
-
-// This function is for testing purposes only
-function buyAllStreets(player) {
-  function generateStreetPositions() {
-    var property = Object.values(properties);
-    var streetPositions = [];
-    for (var i = 0; i < Object.keys(properties).length; i++) {
-      for (var j = 0; j < property[i].length; j++) {
-        if (  property[i][j]["house_1"] != "") {
-          streetPositions.push(property[i][j].position);
-        }
-      }
-    }
-    return streetPositions;
-  }
-  var streets = generateStreetPositions();
-  for(var i = 0; i < streets.length; i++) {
-    // Buy all the properties
-    buyUnsoldProperty(player, streets[i]);
-
-    // Buy three houses on all of them
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-  }
 }
 
 // Lets the user buy property and then marks it as sold and adds the user as the owner
@@ -67,7 +46,6 @@ function getLandingPrice(player) {
   var house_4 = targetProperty.house_4;
   var hotel = targetProperty.hotel;
   var numHouses = targetProperty.num_houses;
-  console.log(numHouses);
   var landingPrice;
 
   if(numHouses == 0) {
@@ -92,11 +70,11 @@ function landOnProperty(player, owner) {
     var targetProperty = returnProperty(player.position);
     var owner = targetProperty.owner;
     var price = getLandingPrice(player);
-    console.log("You pay : " + price + " to stay there");
     removeCash(player, price);
     addCash(owner, price);
+    console.log("You pay: $" + price + " to stay there");
+    console.log("You have: $" + player.cash + " left.");
   }
-
 }
 
 // Note-to-self: Make sure the player can't buy more than "5 houses" or 1 hotel.
@@ -147,18 +125,33 @@ function getNewPosition(player) {
     player.position = newPosition;
   }
 
+  var targetProperty = returnProperty(player.position);
+  console.log("You are at street number: " + player.position);
+  console.log("This street is named: " + targetProperty.name);
+  var normalStreet = isNormalStreet(player.position);
+  if(normalStreet == true) {
+    var owner = targetProperty.owner;
+    landOnProperty(player, owner);
+  }
+  payTax(player);
   if(snakeEyes) {
     console.log("Snake eyes!");
     getNewPosition(player);
   }
-  console.log("You are at position: " + player.position);
-
-  var targetProperty = returnProperty(player.position);
-  var owner = targetProperty.owner;
-  landOnProperty(player, owner);
-  return player.position;
 }
 
+function payTax(player) {
+  var superTax = returnProperty(38);
+  var incomeTax = returnProperty(4);
+  if(player.position == superTax.position) {
+    removeCash(player, superTax.price)
+    console.log("You pay $" + superTax.price + " in tax.");
+  }
+  else if(player.position == incomeTax.position) {
+    removeCash(player, incomeTax.price);
+    console.log("You pay $" + incomeTax.price + " in tax.");
+  }
+}
 // Generic functions to add, remove or transfer cash from a player's hand
 function removeCash(player, amount) {
   player.cash -= amount;
@@ -175,12 +168,53 @@ function transferCash(player1, player2, amount) {
 
 // Receive $200 if you pass start
 function passStart(player) {
+  console.log("You pass start, receive 200");
   addCash(player, 200);
 }
 
 // Receive $400 if you land on start
 function landOnStart(player) {
+  console.log("You pass start, receive 400");
   addCash(player, 400);
+}
+
+function generateStreetPositions() {
+  var property = Object.values(properties);
+  var streetPositions = [];
+  for (var i = 0; i < Object.keys(properties).length; i++) {
+    for (var j = 0; j < property[i].length; j++) {
+      if (property[i][j]["house_1"]) {
+        streetPositions.push(property[i][j].position);
+      }
+    }
+  }
+  return streetPositions;
+}
+
+function isNormalStreet(position) {
+  var streets = generateStreetPositions();
+  var count = 0;
+  for(var i = 0; i < streets.length; i++) {
+    if(streets[i] == position) {
+      count += 1;
+    }
+  }
+  return count > 0;
+}
+
+// The functions below are for testing purposes only
+
+function buyAllStreets(player) {
+  var streets = generateStreetPositions();
+  for(var i = 0; i < streets.length; i++) {
+    // Buy all the properties
+    buyUnsoldProperty(player, streets[i]);
+
+    // Buy three houses on all of them
+    buyHouse(player, streets[i]);
+    buyHouse(player, streets[i]);
+    buyHouse(player, streets[i]);
+  }
 }
 
 function playGame() {

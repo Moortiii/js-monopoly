@@ -1,3 +1,11 @@
+// Generate punish blocks etc.
+
+function Tax(name, price, position) {
+  this.name = name;
+  this.price = price;
+  this.position = position;
+}
+
 // Generic function to create a new player with certain properties.
 function Player(name, cash, position, properties) {
   this.name = name;
@@ -97,5 +105,9 @@ var properties = {
   utilities: [
     new Utility("Electric Company", 12, 4, 10, 75, 150),
     new Utility("Waterworks", 28, 4, 10, 75, 150)
+  ],
+  tax: [
+    new Tax("Super Tax", 200, 38),
+    new Tax("Income Tax", 100, 4)
   ]
 };

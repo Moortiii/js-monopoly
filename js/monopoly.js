@@ -3,21 +3,11 @@
 //TO:DO Add chance cards
 //TO:DO Add jail system
 
-// Returns a property object given an arbitrary position
-function returnProperty(position) {
-  var property = Object.values(properties);
-  var propertyObject;
-  for (var i = 0; i < Object.keys(properties).length; i++) {
-    for (var j = 0; j < property[i].length; j++) {
-      if (property[i][j].position == position) {
-        propertyObject = property[i][j];
-      }
-    }
-  }
-  return propertyObject;
-}
+// This function is overtly complex and in essence does the exact same thing as buyUnsoldProperty()
+// I have no idea why I decided to it this way, but I feel like there must be some reason why I spent
+// ALl that time crafting it, which is why I've decided to keep it around for future reference.
+// It Lets the user buy property and then marks it as sold and adds the user as the owner
 
-// Lets the user buy property and then marks it as sold and adds the user as the owner
 // function buyPropertyOld(player, position) {
 //   var targetProperty = returnProperty(position);
 //   var propertyName = targetProperty.name;
@@ -36,6 +26,20 @@ function returnProperty(position) {
 //     }
 //   }
 // }
+
+// Returns a property object given an arbitrary position
+function returnProperty(position) {
+  var property = Object.values(properties);
+  var propertyObject;
+  for (var i = 0; i < Object.keys(properties).length; i++) {
+    for (var j = 0; j < property[i].length; j++) {
+      if (property[i][j].position == position) {
+        propertyObject = property[i][j];
+      }
+    }
+  }
+  return propertyObject;
+}
 
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
@@ -110,13 +114,44 @@ function landOnProperty(player, owner) {
   }
 }
 
-// TO:DO Create discard pile..
 function drawChanceCard(player) {
+  // Check if there are unused chance cards left
+  function checkChanceCards() {
+    var chanceCardArray = chanceCards.cards;
+    // Check if there are any cards left that can be used
+    var unusedCount = 0;
+    for(var i = 0; i < chanceCardArray.length; i++) {
+      if(chanceCardArray[i].used == false) {
+        unusedCount += 1;
+      }
+    }
+    // If there aren't any cards left to be use, shuffle the cards
+    // We use <= in case we somehow accidentally manage to draw twice on a snake eyes roll
+    if(unusedCount <= 0) {
+      shuffleChanceCards();
+    }
+  }
+  // Function to shuffle the chance cards
+  function shuffleChanceCards() {
+    for(var i = 0; i < chanceCards.cards.length; i++) {
+      chanceCards.cards[i].used = false;
+    }
+  }
+  // Grab a random chance card until you get one that is unused
+  function getChanceCard() {
+    var randomCardIndex = Math.floor(Math.random() * chanceCards.cards.length);
+    var chanceCard = chanceCards.cards[randomCardIndex];
+    if(chanceCard.used == true) {
+      chanceCard = getChanceCard();
+    }
+    return chanceCard;
+  }
+
+  // Handle what happens when the user finally draws a chance card
+  checkChanceCards();
   var position = player.position;
-  var chanceCard
-  var randomCardIndex = Math.floor(Math.random() * chanceCards.cards.length);
-  var chanceCard = chanceCards.cards[randomCardIndex];
-  if(position == 7 || position == 22 || position == 36 && chanceCard.used != true) {
+  var chanceCard = getChanceCard();
+  if(position == 7 || position == 22 || position == 36) {
     console.log("You drew: " + chanceCard.name);
     console.log("Description: " + chanceCard.description);
     chanceCard.action(player);
@@ -124,13 +159,6 @@ function drawChanceCard(player) {
   }
 }
 
-function shuffleChanceCards() {
-  for(var i = 0; i < chanceCards.cards.length; i++) {
-    chanceCards.cards[i].used = false;
-  }
-}
-
-// Note-to-self: Make sure the player can't buy more than "5 houses" or 1 hotel.
 function buyHouse(player, position) {
   var targetProperty = returnProperty(position);
   var housePrice = targetProperty.house_price;

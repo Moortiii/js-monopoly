@@ -44,10 +44,24 @@ function returnProperty(position) {
   return propertyObject;
 }
 
+// Returns an array with the indices of all properties that aren't free parking, jail, start, community chest, taxes or chance cards.
+function generateStreetPositions() {
+  var property = Object.values(properties);
+  var streetPositions = [];
+  for (var i = 0; i < Object.keys(properties).length; i++) {
+    for (var j = 0; j < property[i].length; j++) {
+      if(property[i][j].type == ["Street"] || property[i][j].type == ["Utility"]  || property[i][j].type == ["Station"]) {
+        streetPositions.push(property[i][j].position);
+      }
+    }
+  }
+  return streetPositions;
+}
+
 // TO:DO Ensure the player can roll again if they get snake eyes
 function rollDice() {
-  var dice_1 = Math.floor((Math.random() * 6) + 1);
-  var dice_2 = Math.floor((Math.random() * 6) + 1);
+  var dice_1 = rollSingleDice();
+  var dice_2 = rollSingleDice();
   console.log("Dice 1: " + dice_1 + "\nDice 2: " + dice_2);
   var sum = dice_1 + dice_2;
   var snakeEyes = dice_1 == dice_2;
@@ -157,7 +171,7 @@ function unMortgageProperty(player, position) {
 // This also handles distributing cash if they pass or land on start
 // If they land on an owned property, they pay rent.
 
-function getNewPosition() {
+function getNewPosition(player) {
   var diceRoll = rollDice();
   var moveDistance = diceRoll[0];
   var snakeEyes = diceRoll[1];
@@ -174,6 +188,17 @@ function getNewPosition() {
   } else {
     player.position = newPosition;
   }
+}
+
+function mustPayToLand(position) {
+  var properties = generateStreetPositions();
+  var count = 0;
+  for(var i = 0; i < properties.length; i++) {
+    if(properties[i] == position) {
+      count += 1;
+    }
+  }
+  return count > 0;
 }
 
 function landOnProperty(player) {
@@ -243,16 +268,22 @@ function landOnProperty(player) {
     }
     return landingPrice;
   }
+
   if(isPayableStreet == true) {
+    console.log("This street is named " + targetProperty.name);
+    console.log("It is at position " + targetProperty.position);
+    console.log("You own this property.")
     var owner = targetProperty.owner;
-    if(player != owner && targetProperty.mortgaged != true) {
-      var price = getLandingPrice();
-      removeCash(player, price);
-      addCash(owner, price);
-      console.log("This street is named " + targetProperty.name);
-      console.log("You landed on " + owner.name + "'s property.");
-      console.log("You pay: $" + price + " to stay there.");
-      console.log("You have: $" + player.cash + " left.");
+    if(player != owner) {
+      if(targetProperty.mortgaged != true) {
+        var price = getLandingPrice();
+        removeCash(player, price);
+        addCash(owner, price);
+        console.log("This street is named " + targetProperty.name);
+        console.log("You landed on " + owner.name + "'s property.");
+        console.log("You pay: $" + price + " to stay there.");
+        console.log("You have: $" + player.cash + " left.");
+      }
     }
   }
 }
@@ -304,37 +335,14 @@ function drawChanceCard(player) {
 
 // TO:DO You currently play twice if you get snake-eyes :-)))
 function movePlayer(player) {
-  getNewPosition();
-  payTax(player);
-  drawChanceCard(player);
+  getNewPosition(player);
+  //payTax(player);
+  //drawChanceCard(player);
   landOnProperty(player);
 }
 
-function generateStreetPositions() {
-  var property = Object.values(properties);
-  var streetPositions = [];
-  for (var i = 0; i < Object.keys(properties).length; i++) {
-    for (var j = 0; j < property[i].length; j++) {
-      if(property[i][j].type == ["Street"] || property[i][j].type == ["Utility"]  || property[i][j].type == ["Station"]) {
-        streetPositions.push(property[i][j].position);
-      }
-    }
-  }
-  return streetPositions;
-}
-
-function mustPayToLand(position) {
-  var properties = generateStreetPositions();
-  var count = 0;
-  for(var i = 0; i < properties.length; i++) {
-    if(properties[i] == position) {
-      count += 1;
-    }
-  }
-  return count > 0;
-}
-
 // The functions below are for testing purposes only
+
 function buyAllStreets(player) {
   var streets = generateStreetPositions();
 

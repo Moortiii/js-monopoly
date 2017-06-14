@@ -71,11 +71,18 @@ function Utility(name, position, owns_1_multiplier, owns_2_multiplier, mortgage_
 }
 
 // Not sure if this function is neccessary, time will show
-// function FreeParking(name, position, price) {
-//   this.name = name;
-//   this.position = position;
-//   this.price = price;
-// }
+function FreeParking(name, position, price) {
+  this.name = name;
+  this.position = position;
+  this.price = price;
+}
+
+function Jail(name, position, price, action) {
+  this.name = name;
+  this.position = position;
+  this.price = price;
+  this.action = action;
+}
 
 function ChanceCard(name, description, action) {
   this.name = name;
@@ -84,6 +91,12 @@ function ChanceCard(name, description, action) {
 }
 
 function CommunityChest(name, description, action) {
+  this.name = name;
+  this.description = description;
+  this.action = action;
+}
+
+function BlankCard(name, description, action) {
   this.name = name;
   this.description = description;
   this.action = action;
@@ -108,7 +121,7 @@ function chanceMoveUtility(player) {
     targetProperty = returnProperty(12);
   }
   var propertyOwner = targetProperty.owner;
-  if(propertyOwner != player) {
+  if(propertyOwner != player && propertyOwner != bank) {
     var dice = Math.floor((Math.random() * 6) + 1);
     var amountToPay = dice * 10;
     removeCash(player, amountToPay);
@@ -121,8 +134,10 @@ function chanceMoveUtility(player) {
 // Allows you to collect an arbitrary amount of cash from an arbitrary amount of players
 function collectSum(player, amount) {
   var you = player;
+  var sum;
   for(person in players) {
     if(players[person] != you) {
+      sum += 50;
       removeCash(players[person], amount);
       addCash(you, amount);
     }
@@ -163,6 +178,14 @@ var players = {
 
 var bank = new Bank("bank", 500000, [], [], []);
 
+// Create blank cards
+var blankCards = {
+  cards: [
+    new BlankCard("Blank Card", "This is a blank card used to make drawChanceOrChest function", function(player) {
+      // Nothing happens
+    })
+  ]
+}
 // Create the community chests
 var communityChests = {
   cards: [
@@ -323,6 +346,17 @@ var properties = {
   tax: [
     new Tax("Super Tax", 200, 38),
     new Tax("Income Tax", 100, 4)
+  ],
+  free_parking: [
+    new FreeParking("Free Parking", 0, 20)
+  ],
+  jail: [
+    new Jail("Jail", 30, 0, function(player) {
+      goToJail(player);
+    }),
+    new Jail("Jail Visit", 10, 0, function(player) {
+      console.log("You are visiting jail, however you are not actually jailed.")
+    })
   ],
   chance: [
     new chanceProperty("Chance Red", 7),

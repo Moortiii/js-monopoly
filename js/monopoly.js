@@ -1,6 +1,8 @@
 //TO:DO Make rolling snake eyes function in a way that actually makes sense e.g. not pay twice..
-//TO:DO Create blocks for start, jailvisit, free parking and jail itself
-//TO:DO Figure out why removeCash() sometimes returns NaN.
+//TO:DO Make a functioning Get Out Of Jail Free card.
+
+/* KNOWN BUGS */
+// If you land on a chance card at position 36 and move 3 spaces back you don't draw a community chest card
 
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
 // I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
@@ -194,7 +196,7 @@ function goToJail(player) {
 function completeActions(player) {
   landOnProperty(player);
   payTax(player);
-  drawChanceOrdChest(player);
+  drawChanceOrChest(player);
 }
 
 function jailRoll(player) {
@@ -359,8 +361,9 @@ function landOnProperty(player) {
   }
 }
 
+//TO:DO This is broken, always draws a card
 function drawChanceOrChest(player) {
-  var cardType = communityChests;
+  var cardType;
   switch(player.position) {
     case 7:
     case 22:
@@ -372,6 +375,8 @@ function drawChanceOrChest(player) {
     case 33:
       cardType = communityChests;
       break;
+    default:
+      cardType = blankCards;
   }
 
   // Shuffle any pile of cards given its card type
@@ -382,19 +387,19 @@ function drawChanceOrChest(player) {
   }
 
   // Check if there are community chests left to be used
-  function checkChanceCards(cardType) {
+  function checkChanceCards(cardType_1) {
     var cardArray = cardType.cards;
     // Check if there are any cards left that can be used
     var cardUnusedCount = 0;
     for(var i = 0; i < cardType.cards.length; i++) {
       if(cardArray[i].used == false) {
-        chestUnusedCount += 1;
+        cardUnusedCount += 1;
       }
     }
     // If there aren't any cards left to be use, shuffle the cards
     // We use <= in case we somehow accidentally manage to draw twice on a snake eyes roll
     if(cardUnusedCount <= 0) {
-      shuffleCardPile(cardType);
+      shuffleCardPile(cardType_1);
     }
   }
 

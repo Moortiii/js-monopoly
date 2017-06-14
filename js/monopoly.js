@@ -1,11 +1,15 @@
 //TO:DO Add community chests
 //TO:DO Add jail system
+  //TO:DO RE: JAIL - Keep track of how many times the user has tried to get out of jail
+  //TO:DO RE: JAIL - Make sure the user can get out of jail either by paying or using a card
+  //TO:DO RE: JAIL - Jail the player if they roll snake eyes three times in a row. Maybe a turn system makes sense after all?
+
 //TO:DO Make snake eyes function in a way that actually makes sense e.g. not pay twice..
 
-// This function is overly complex and in essence does the exact same thing as buyUnsoldProperty()
-// I have no idea why I decided to it this way, but I feel like there must be some reason why I spent
-// ALl that time crafting it, which is why I've decided to keep it around for future reference.
-// It Lets the user buy property and then marks it as sold and adds the user as the owner
+// 14.06.2017 An overly complex function I created that in essence does the exact same thing as buyUnsoldProperty()
+// which I created earlier today. I was sleep deprived when I created the other and am unsure why I decided to do it in
+// such a complicated way. However, I feel like there must be some reason and that if I keep if for future reference
+// I will most certainly end up thanking myself religiously later.
 
 // function buyPropertyOld(player, position) {
 //   var targetProperty = returnProperty(position);
@@ -82,9 +86,40 @@ function unMortgageProperty(player, position) {
   }
 }
 
-function landOnProperty(player, owner) {
-  var targetProperty = returnProperty(player.position);
+// Get the new position for player when they roll the dice
+// This also handles distributing cash if they pass or land on start
+// If they land on an owned property, they pay rent.
 
+// TO:DO You currently play twice if you get snake-eyes :-)))
+function movePlayer(player) {
+  function getNewPosition() {
+    var diceRoll = rollDice();
+    var moveDistance = diceRoll[0];
+    var snakeEyes = diceRoll[1];
+
+    var currentPosition = player.position;
+    var newPosition = currentPosition + moveDistance;
+    if(newPosition == 40) {
+      player.position = 0;
+      landOnStart(player);
+    } else if(newPosition > 40) {
+      var squaresLeft = 40 - currentPosition;
+      player.position = -squaresLeft + moveDistance;
+      passStart(player);
+    } else {
+      player.position = newPosition;
+    }
+  }
+
+  getNewPosition();
+  payTax(player);
+  drawChanceCard(player);
+  landOnProperty(player);
+}
+
+function landOnProperty(player) {
+  var targetProperty = returnProperty(player.position);
+  var isPayableStreet = mustPayToLand(player.position);
   // Get the landing price when you land on a property
   function getLandingPrice() {
     var landingPrice;
@@ -149,14 +184,17 @@ function landOnProperty(player, owner) {
     }
     return landingPrice;
   }
-
-  if(player != owner && targetProperty.mortgaged != true) {
-    var price = getLandingPrice();
-    removeCash(player, price);
-    addCash(owner, price);
-    console.log("You landed on: " + owner.name + "'s property");
-    console.log("You pay: $" + price + " to stay there");
-    console.log("You have: $" + player.cash + " left.");
+  if(isPayableStreet == true) {
+    var owner = targetProperty.owner;
+    if(player != owner && targetProperty.mortgaged != true) {
+      var price = getLandingPrice();
+      removeCash(player, price);
+      addCash(owner, price);
+      console.log("This street is named " + targetProperty.name);
+      console.log("You landed on " + owner.name + "'s property.");
+      console.log("You pay: $" + price + " to stay there.");
+      console.log("You have: $" + player.cash + " left.");
+    }
   }
 }
 
@@ -221,7 +259,7 @@ function buyHouse(player, position) {
 function rollDice() {
   var dice_1 = Math.floor((Math.random() * 6) + 1);
   var dice_2 = Math.floor((Math.random() * 6) + 1);
-  console.log("1: " + dice_1 + "\n2: " + dice_2);
+  console.log("Dice 1: " + dice_1 + "\nDice 2: " + dice_2);
   var sum = dice_1 + dice_2;
   var snakeEyes = dice_1 == dice_2;
   var diceOutcome = [];
@@ -232,45 +270,6 @@ function rollDice() {
 function rollSingleDice() {
   var dice = Math.floor((Math.random() * 6) + 1);
   return dice;
-}
-
-// Get the new position for player when they roll the dice
-// This also handles distributing cash if they pass or land on start
-// If they land on an owned property, they pay rent.
-
-// TO:DO You currently play twice if you get snake-eyes :-)))
-function getNewPosition(player) {
-  var diceRoll = rollDice();
-  var moveDistance = diceRoll[0];
-  var snakeEyes = diceRoll[1];
-
-  var currentPosition = player.position;
-  var newPosition = currentPosition + moveDistance;
-  if(newPosition == 40) {
-    player.position = 0;
-    landOnStart(player);
-  } else if(newPosition > 40) {
-    var squaresLeft = 40 - currentPosition;
-    player.position = -squaresLeft + moveDistance;
-    passStart(player);
-  } else {
-    player.position = newPosition;
-  }
-
-  var targetProperty = returnProperty(player.position);
-  console.log("You are at street number: " + player.position);
-  console.log("This street is named: " + targetProperty.name);
-  var isPayableStreet = mustPayToLand(player.position);
-  if(isPayableStreet == true) {
-    var owner = targetProperty.owner;
-    landOnProperty(player, owner);
-  }
-  payTax(player);
-  drawChanceCard(player);
-  // if(snakeEyes) {
-  //   console.log("Snake eyes!");
-  //   getNewPosition(player);
-  // }
 }
 
 function payTax(player) {
@@ -340,25 +339,25 @@ function buyAllStreets(player) {
   var streets = generateStreetPositions();
 
   // Sort an array numerically
+  // Can't belive this isn't a built in function in JavaScript
   function sortNumber(a,b) {
       return a - b;
   }
   streets.sort(sortNumber);
   for(var i = 0; i < streets.length; i++) {
-    // Buy all the properties
+    // Buy all the properties and a hotel on each
     buyUnsoldProperty(player, streets[i]);
-
-    // Buy three houses on all of them
+    buyHouse(player, streets[i]);
+    buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
   }
-  console.log("New length: " + player.properties.length);
 }
 
 function playGame() {
   buyAllStreets(players.player_1);
-  getNewPosition(players.player_2);
+  movePlayer(players.player_2);
 }
 
 playGame();

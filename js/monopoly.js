@@ -254,7 +254,7 @@ function landOnProperty(player) {
     } else if(targetProperty.type == "Utility") {
       var utilitiesOwned = owner.utilities.length;
       var diceRoll = rollSingleDice();
-      console.log("You rolled: ");
+      console.log("You rolled: " + diceRoll);
       switch(utilitiesOwned) {
         case 1:
           landingPrice = diceRoll * targetProperty.owns_1_multiplier;
@@ -272,18 +272,18 @@ function landOnProperty(player) {
   if(isPayableStreet == true) {
     console.log("This street is named " + targetProperty.name);
     console.log("It is at position " + targetProperty.position);
-    console.log("You own this property.")
     var owner = targetProperty.owner;
     if(player != owner) {
       if(targetProperty.mortgaged != true) {
         var price = getLandingPrice();
         removeCash(player, price);
         addCash(owner, price);
-        console.log("This street is named " + targetProperty.name);
         console.log("You landed on " + owner.name + "'s property.");
         console.log("You pay: $" + price + " to stay there.");
         console.log("You have: $" + player.cash + " left.");
       }
+    } else {
+      console.log("You own this property.")
     }
   }
 }

@@ -1,9 +1,8 @@
-//TO:DO Mortgage properties
 //TO:DO Add community chests
-//TO:DO Add chance cards
 //TO:DO Add jail system
+//TO:DO Make snake eyes function in a way that actually makes sense e.g. not pay twice..
 
-// This function is overtly complex and in essence does the exact same thing as buyUnsoldProperty()
+// This function is overly complex and in essence does the exact same thing as buyUnsoldProperty()
 // I have no idea why I decided to it this way, but I feel like there must be some reason why I spent
 // ALl that time crafting it, which is why I've decided to keep it around for future reference.
 // It Lets the user buy property and then marks it as sold and adds the user as the owner
@@ -43,15 +42,24 @@ function returnProperty(position) {
 
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
-  var propertyName = targetProperty.name;
   var propertyPrice = targetProperty.price;
 
   if(player.cash >= propertyPrice && targetProperty.sold != true) {
-    removeCash(player, propertyPrice);
-    player.properties.push(targetProperty);
-    targetProperty.sold = true;
-    targetProperty.owner = player;
+    switch(targetProperty.type) {
+      case "Station":
+        player.stations.push(targetProperty);
+        break;
+      case "Utility":
+        player.utilities.push(targetProperty);
+        break;
+      case "Street":
+        player.properties.push(targetProperty);
+        break;
+    }
   }
+  targetProperty.owner = player;
+  targetProperty.sold = true;
+  removeCash(player, propertyPrice);
 }
 
 function mortgageProperty(player, position) {
@@ -74,38 +82,76 @@ function unMortgageProperty(player, position) {
   }
 }
 
-function getLandingPrice(player) {
-  var targetProperty = returnProperty(player.position);
-  var rent = targetProperty.rent;
-  var house_1 = targetProperty.house_1;
-  var house_2 = targetProperty.house_2;
-  var house_3 = targetProperty.house_3;
-  var house_4 = targetProperty.house_4;
-  var hotel = targetProperty.hotel;
-  var numHouses = targetProperty.num_houses;
-  var landingPrice;
-
-  if(numHouses == 0) {
-    landingPrice = rent;
-  } else if(numHouses == 1) {
-    landingPrice = house_1;
-  } else if(numHouses == 2) {
-    landingPrice = house_2;
-  } else if(numHouses == 3) {
-    landingPrice = house_3;
-  } else if(numHouses == 4) {
-    landingPrice = house_4;
-  } else if(numHouses == 5) {
-    landingPrice = hotel;
-  }
-  return landingPrice;
-}
-
 function landOnProperty(player, owner) {
   var targetProperty = returnProperty(player.position);
-  if(player != owner && targetProperty.mortgaged != true) {
+
+  // Get the landing price when you land on a property
+  function getLandingPrice() {
+    var landingPrice;
+    var targetProperty = returnProperty(player.position);
     var owner = targetProperty.owner;
-    var price = getLandingPrice(player);
+    if(targetProperty.type == "Street") {
+      var numHouses = targetProperty.num_houses;
+      switch(numHouses) {
+        case 0:
+          landingPrice = targetProperty.rent;
+          break;
+        case 1:
+          landingPrice = targetProperty.house_1;
+          break;
+        case 2:
+          landingPrice = targetProperty.house_2;
+          break;
+        case 3:
+          landingPrice = targetProperty.house_3;
+          break;
+        case 4:
+          landingPrice = targetProperty.house_4;
+          break;
+        case 5:
+          landingPrice = targetProperty.hotel;
+          break;
+        default:
+          landingPrice = 0;
+      }
+    } else if(targetProperty.type == "Station") {
+      var stationsOwned = owner.stations.length;
+      switch(stationsOwned) {
+        case 1:
+          landingPrice = targetProperty.owns_1;
+          break;
+        case 2:
+          landingPrice = targetProperty.owns_2;
+          break;
+        case 3:
+          landingPrice = targetProperty.owns_3;
+          break;
+        case 4:
+          landingPrice = targetProperty.owns_4;
+          break;
+        default:
+          landingPrice = 0;
+      }
+    } else if(targetProperty.type == "Utility") {
+      var utilitiesOwned = owner.utilities.length;
+      var diceRoll = rollSingleDice();
+      console.log("You rolled: ");
+      switch(utilitiesOwned) {
+        case 1:
+          landingPrice = diceRoll * targetProperty.owns_1_multiplier;
+          break;
+        case 2:
+          landingPrice = diceRoll * targetProperty.owns_2_multiplier;
+          break;
+        default:
+          landingPrice = 0;
+      }
+    }
+    return landingPrice;
+  }
+
+  if(player != owner && targetProperty.mortgaged != true) {
+    var price = getLandingPrice();
     removeCash(player, price);
     addCash(owner, price);
     console.log("You landed on: " + owner.name + "'s property");
@@ -183,6 +229,11 @@ function rollDice() {
   return diceOutcome;
 }
 
+function rollSingleDice() {
+  var dice = Math.floor((Math.random() * 6) + 1);
+  return dice;
+}
+
 // Get the new position for player when they roll the dice
 // This also handles distributing cash if they pass or land on start
 // If they land on an owned property, they pay rent.
@@ -209,8 +260,8 @@ function getNewPosition(player) {
   var targetProperty = returnProperty(player.position);
   console.log("You are at street number: " + player.position);
   console.log("This street is named: " + targetProperty.name);
-  var normalStreet = isNormalStreet(player.position);
-  if(normalStreet == true) {
+  var isPayableStreet = mustPayToLand(player.position);
+  if(isPayableStreet == true) {
     var owner = targetProperty.owner;
     landOnProperty(player, owner);
   }
@@ -265,7 +316,7 @@ function generateStreetPositions() {
   var streetPositions = [];
   for (var i = 0; i < Object.keys(properties).length; i++) {
     for (var j = 0; j < property[i].length; j++) {
-      if (property[i][j]["house_1"]) {
+      if(property[i][j].type == ["Street"] || property[i][j].type == ["Utility"]  || property[i][j].type == ["Station"]) {
         streetPositions.push(property[i][j].position);
       }
     }
@@ -273,11 +324,11 @@ function generateStreetPositions() {
   return streetPositions;
 }
 
-function isNormalStreet(position) {
-  var streets = generateStreetPositions();
+function mustPayToLand(position) {
+  var properties = generateStreetPositions();
   var count = 0;
-  for(var i = 0; i < streets.length; i++) {
-    if(streets[i] == position) {
+  for(var i = 0; i < properties.length; i++) {
+    if(properties[i] == position) {
       count += 1;
     }
   }
@@ -287,18 +338,22 @@ function isNormalStreet(position) {
 // The functions below are for testing purposes only
 function buyAllStreets(player) {
   var streets = generateStreetPositions();
+
+  // Sort an array numerically
+  function sortNumber(a,b) {
+      return a - b;
+  }
+  streets.sort(sortNumber);
   for(var i = 0; i < streets.length; i++) {
     // Buy all the properties
     buyUnsoldProperty(player, streets[i]);
-    buyUnsoldProperty(player, 12);
-    buyUnsoldProperty(player, 28);
 
     // Buy three houses on all of them
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
     buyHouse(player, streets[i]);
-    mortgageProperty(player, streets[i]);
   }
+  console.log("New length: " + player.properties.length);
 }
 
 function playGame() {

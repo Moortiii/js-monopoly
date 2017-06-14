@@ -1,9 +1,11 @@
 // Generic function to create a new player with certain properties.
-function Player(name, cash, position, properties) {
+function Player(name, cash, position, properties, stations, utilities) {
   this.name = name;
   this.cash = cash;
   this.position = position;
   this.properties = properties;
+  this.stations = stations;
+  this.utilities = utilities;
 }
 
 // Constructor for the tax-properties
@@ -19,7 +21,7 @@ function chanceProperty(name, position) {
 }
 
 // Functions to create the properties, stations and utilites
-function Property(name, position, rent, house_1, house_2, house_3, house_4, hotel, house_price, mortgage_value, num_houses, price) {
+function Property(name, position, rent, house_1, house_2, house_3, house_4, hotel, house_price, mortgage_value, num_houses, price, type) {
   this.name = name;
   this.position = position;
   this.rent = rent;
@@ -32,9 +34,16 @@ function Property(name, position, rent, house_1, house_2, house_3, house_4, hote
   this.mortgage_value = mortgage_value;
   this.num_houses = num_houses;
   this.price = price;
+  this.type = type;
 }
 
-function Station(name, position, owns_1, owns_2, owns_3, owns_4, mortgage_value, price) {
+function FreeParking(name, position, price) {
+  this.name = name;
+  this.position = position;
+  this.price = price;
+}
+
+function Station(name, position, owns_1, owns_2, owns_3, owns_4, mortgage_value, price, type) {
   this.name = name;
   this.position = position;
   this.owns_1 = owns_1;
@@ -43,15 +52,17 @@ function Station(name, position, owns_1, owns_2, owns_3, owns_4, mortgage_value,
   this.owns_4 = owns_4;
   this.mortgage_value = mortgage_value;
   this.price = price;
+  this.type = type;
 }
 
-function Utility(name, position, owns_1_multiplier, owns_2_multiplier, mortgage_value, price) {
+function Utility(name, position, owns_1_multiplier, owns_2_multiplier, mortgage_value, price, type) {
   this.name = name;
   this.position = position;
   this.owns_1_multiplier = owns_1_multiplier;
   this.owns_2_multiplier = owns_2_multiplier;
   this.mortgage_value = mortgage_value;
   this.price = price;
+  this.type = type;
 }
 
 function ChanceCard(name, description, action) {
@@ -62,8 +73,8 @@ function ChanceCard(name, description, action) {
 
 // Create the players for the game
 var players = {
-  player_1: new Player("Morten", 4190, 0, []),
-  player_2: new Player("Kjetil", 3000, 0, [])
+  player_1: new Player("Morten", 500000, 0, [], [], []),
+  player_2: new Player("Kjetil", 3000, 0, [], [], [])
 };
 
 var chanceCards = {
@@ -110,52 +121,52 @@ var chanceCards = {
 // Define each of the properties, stations and utilities explicitly.
 var properties = {
   magenta: [
-    new Property("Old Kent Road", 1, 2, 10, 30, 90, 160, 250, 30, 50, 0, 60),
-    new Property("Whitechapel Road", 3, 4, 10, 30, 90, 160, 250, 30, 50, 0, 60)
+    new Property("Old Kent Road", 1, 2, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street"),
+    new Property("Whitechapel Road", 3, 4, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street")
   ],
   light_blue: [
-    new Property("Angel Islington", 6, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100),
-    new Property("Euston Road", 8, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100),
-    new Property("Pentonville Road", 9, 8, 40, 100, 300, 450, 600, 50, 60, 0, 120)
+    new Property("Angel Islington", 6, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street"),
+    new Property("Euston Road", 8, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street"),
+    new Property("Pentonville Road", 9, 8, 40, 100, 300, 450, 600, 50, 60, 0, 120, "Street")
   ],
   pink: [
-    new Property("Pall Mall", 11, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140),
-    new Property("Whitehall", 13, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140),
-    new Property("Northumberland Road", 14, 12, 60, 180, 500, 700, 900, 100, 80, 0, 160)
+    new Property("Pall Mall", 11, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street"),
+    new Property("Whitehall", 13, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street"),
+    new Property("Northumberland Road", 14, 12, 60, 180, 500, 700, 900, 100, 80, 0, 160, "Street")
   ],
   orange: [
-    new Property("Bow Street", 16, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180),
-    new Property("Marlborough Street", 18, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180),
-    new Property("Vine Street", 19, 16, 70, 200, 550, 750, 950, 100, 90, 0, 200)
+    new Property("Bow Street", 16, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street"),
+    new Property("Marlborough Street", 18, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street"),
+    new Property("Vine Street", 19, 16, 70, 200, 550, 750, 950, 100, 90, 0, 200, "Street")
   ],
   red: [
-    new Property("Strand", 21, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220),
-    new Property("Fleet Street", 23, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220),
-    new Property("Trafalgar Square", 24, 20, 90, 250, 700, 875, 1050, 150, 110, 0, 240)
+    new Property("Strand", 21, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street"),
+    new Property("Fleet Street", 23, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street"),
+    new Property("Trafalgar Square", 24, 20, 90, 250, 700, 875, 1050, 150, 110, 0, 240, "Street")
   ],
   yellow: [
-    new Property("Leicester Square", 26, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260),
-    new Property("Coventry Street", 27, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260),
-    new Property("Picadilly", 29, 24, 120, 360, 850, 1025, 1200, 150, 150, 0, 280)
+    new Property("Leicester Square", 26, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street"),
+    new Property("Coventry Street", 27, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street"),
+    new Property("Picadilly", 29, 24, 120, 360, 850, 1025, 1200, 150, 150, 0, 280, "Street")
   ],
   green: [
-    new Property("Regent Street", 31, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300),
-    new Property("Oxford Street", 32, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300),
-    new Property("Bond Street", 34, 28, 150, 450, 1000, 1200, 1400, 150, 200, 0, 320)
+    new Property("Regent Street", 31, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street"),
+    new Property("Oxford Street", 32, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street"),
+    new Property("Bond Street", 34, 28, 150, 450, 1000, 1200, 1400, 150, 200, 0, 320, "Street")
   ],
   dark_blue: [
-    new Property("Park Lane", 37, 35, 175, 500, 1100, 1300, 1500, 200, 175, 0, 350),
-    new Property("Mayfair", 39, 50, 200, 600, 1400, 1700, 2000, 200, 200, 0, 400)
+    new Property("Park Lane", 37, 35, 175, 500, 1100, 1300, 1500, 200, 175, 0, 350, "Street"),
+    new Property("Mayfair", 39, 50, 200, 600, 1400, 1700, 2000, 200, 200, 0, 400, "Street")
   ],
   stations: [
-    new Station("King's Cross Station", 5, 25, 50, 100, 200, 100, 200),
-    new Station("Marylebone Station", 15, 25, 50, 100, 200, 100, 200),
-    new Station("Fenchurch St. Station", 25, 25, 50, 100, 200, 100, 200),
-    new Station("Liverpool Street Station", 35, 25, 50, 100, 200, 100, 200)
+    new Station("King's Cross Station", 5, 25, 50, 100, 200, 100, 200, "Station"),
+    new Station("Marylebone Station", 15, 25, 50, 100, 200, 100, 200, "Station"),
+    new Station("Fenchurch St. Station", 25, 25, 50, 100, 200, 100, 200, "Station"),
+    new Station("Liverpool Street Station", 35, 25, 50, 100, 200, 100, 200, "Station")
   ],
   utilities: [
-    new Utility("Electric Company", 12, 4, 10, 75, 150),
-    new Utility("Waterworks", 28, 4, 10, 75, 150)
+    new Utility("Electric Company", 12, 4, 10, 75, 150, "Utility"),
+    new Utility("Waterworks", 28, 4, 10, 75, 150, "Utility")
   ],
   tax: [
     new Tax("Super Tax", 200, 38),

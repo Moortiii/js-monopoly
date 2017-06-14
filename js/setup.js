@@ -24,7 +24,12 @@ function Tax(name, price, position) {
   this.position = position;
 }
 
-function chanceProperty(name, position) {
+function ChanceProperty(name, position) {
+  this.name = name;
+  this.position = position;
+}
+
+function ChestProperty(name, position) {
   this.name = name;
   this.position = position;
 }
@@ -355,12 +360,17 @@ var properties = {
       goToJail(player);
     }),
     new Jail("Jail Visit", 10, 0, function(player) {
-      console.log("You are visiting jail, however you are not actually jailed.")
+      console.log("You are visiting jail, however you are not actually jailed");
     })
   ],
   chance: [
-    new chanceProperty("Chance Red", 7),
-    new chanceProperty("Chance Blue", 22),
-    new chanceProperty("Chance Yellow", 36)
+    new ChanceProperty("Chance Red", 7),
+    new ChanceProperty("Chance Blue", 22),
+    new ChanceProperty("Chance Yellow", 36)
+  ],
+  chest: [
+    new ChestProperty("Chest Blue", 2),
+    new ChestProperty("Chest Blue", 17),
+    new ChestProperty("Chest Blue", 33)
   ]
 };

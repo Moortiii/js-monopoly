@@ -3,6 +3,7 @@
 
 /* KNOWN BUGS */
 // If you land on a chance card at position 36 and move 3 spaces back you don't draw a community chest card
+// After drawing a chance or community card you can't buy properties..
 
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
 // I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
@@ -260,6 +261,7 @@ function getNewPosition(player) {
   }
 }
 
+//TO:DO What does this one do??
 function mustPayToLand(position) {
   var properties = generateStreetPositions();
   var count = 0;

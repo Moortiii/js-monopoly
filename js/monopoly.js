@@ -5,6 +5,9 @@
   //TO:DO RE: JAIL - Jail the player if they roll snake eyes three times in a row. Maybe a turn system makes sense after all?
 
 //TO:DO Make snake eyes function in a way that actually makes sense e.g. not pay twice..
+//TO:DO Iron out quirks with bank as owner, especially for utilities and stations
+//TO:DO Create blocks for start, jailvist, free parking and jail
+//TO:DO Figure out why removeCash() sometimes returns NaN.
 
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
 // I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
@@ -143,18 +146,23 @@ function payTax(player) {
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
   var propertyPrice = targetProperty.price;
-
-  if(player.cash >= propertyPrice && targetProperty.sold != true) {
-    switch(targetProperty.type) {
-      case "Station":
-        player.stations.push(targetProperty);
-        break;
-      case "Utility":
-        player.utilities.push(targetProperty);
-        break;
-      case "Street":
-        player.properties.push(targetProperty);
-        break;
+  if(player.cash >= propertyPrice && targetProperty.owner == bank) {
+    var wantsToBuy = prompt("Do you want to buy this property?").toLowerCase();
+    if(wantsToBuy == "y" || wantsToBuy == "yes") {
+      switch(targetProperty.type) {
+        case "Station":
+          player.stations.push(targetProperty);
+          break;
+        case "Utility":
+          player.utilities.push(targetProperty);
+          break;
+        case "Street":
+          player.properties.push(targetProperty);
+          targetProperty.num_houses = 0;
+          break;
+      }
+    } else {
+      console.log("You choose not to buy the property.");
     }
   }
   targetProperty.owner = player;
@@ -182,6 +190,56 @@ function unMortgageProperty(player, position) {
   }
 }
 
+function goToJail(player) {
+  player.position = 10;
+  player.jailed = true;
+  player.jailedRounds = 0;
+}
+
+// Corner Case Function: If the player has to be moved manually, make sure he/she still completes his actions as normal
+function completeActions(player) {
+  landOnProperty(player);
+  payTax(player);
+  drawChanceCard(player);
+}
+
+function jailRoll(player) {
+  var triesAllowed = 3;
+  var tryCount = 0;
+
+  while(player.jailed == true && tryCount < 3) {
+    console.log("TryCount: " + tryCount);
+    var diceRoll = rollDice();
+    var diceSum = diceRoll[0];
+    var snakeEyes = diceRoll[1];
+
+    // Keep track of how many rounds a player has tried to get out of jail
+    if(player.jailed == true && tryCount == 2) {
+      player.jailedRounds += 1;
+    }
+    console.log(diceSum); // For debugging purposes
+
+    // If the player rolls snake eyes they get out of jail and move the distance rolled
+    if(player.jailed == true && snakeEyes == true) {
+      player.jailed = false;
+      player.position += diceSum;
+      console.log("You rolled snake eyes! You are no longer jailed and move forward");
+      completeActions(player);
+    } else {
+      tryCount += 1;
+    }
+
+    // If the player is jailed for three rounds they are forced to pay out and move the diceSum
+    if(player.jailed == true && player.jailedRounds == 2 && tryCount == 2) {
+      player.jailed = false;
+      removeCash(player, 50)
+      player.position += diceSum;
+      console.log("You failed to get out of jail in three tries, pay $50 and move forward");
+      completeActions(player);
+    }
+  }
+}
+
 // Get the new position for player when they roll the dice
 // This also handles distributing cash if they pass or land on start
 // If they land on an owned property, they pay rent.
@@ -196,6 +254,8 @@ function getNewPosition(player) {
   if(newPosition == 40) {
     player.position = 0;
     landOnStart(player);
+  } else if(newPosition == 20) {
+    goToJail(player);
   } else if(newPosition > 40) {
     var squaresLeft = 40 - currentPosition;
     player.position = -squaresLeft + moveDistance;
@@ -285,10 +345,15 @@ function landOnProperty(player) {
   }
 
   if(isPayableStreet == true) {
+    var owner = targetProperty.owner;
     console.log("This street is named " + targetProperty.name);
     console.log("It is at position " + targetProperty.position);
-    var owner = targetProperty.owner;
-    if(player != owner) {
+    console.log("Owner: " + owner.name);
+    if(owner == bank) {
+      console.log("The bank currently owns this property");
+    } else if(player == owner) {
+      console.log("You own this property.")
+    } else if(player != owner) {
       if(targetProperty.mortgaged != true) {
         var price = getLandingPrice();
         removeCash(player, price);
@@ -297,8 +362,6 @@ function landOnProperty(player) {
         console.log("You pay: $" + price + " to stay there.");
         console.log("You have: $" + player.cash + " left.");
       }
-    } else {
-      console.log("You own this property.")
     }
   }
 }
@@ -348,39 +411,44 @@ function drawChanceCard(player) {
   }
 }
 
-// TO:DO You currently play twice if you get snake-eyes :-)))
+// TO:DO You currently play twice if you get snake-eyes, maybe fix this :-)))
 function movePlayer(player) {
   getNewPosition(player);
-  //payTax(player);
-  //drawChanceCard(player);
-  landOnProperty(player);
-}
-
-// The functions below are for testing purposes only
-
-function buyAllStreets(player) {
-  var streets = generateStreetPositions();
-
-  // Sort an array numerically
-  // Can't belive this isn't a built in function in JavaScript
-  function sortNumber(a,b) {
-      return a - b;
-  }
-  streets.sort(sortNumber);
-  for(var i = 0; i < streets.length; i++) {
-    // Buy all the properties and a hotel on each
-    buyUnsoldProperty(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
+  if(player.jailed != true) {
+    payTax(player);
+    drawChanceCard(player);
+    landOnProperty(player);
+    buyUnsoldProperty(player, player.position);
+  } else {
+    jailRoll(player);
   }
 }
 
-function playGame() {
-  buyAllStreets(players.player_1);
-  movePlayer(players.player_2);
-}
+//The functions below are for testing purposes only
 
-playGame();
+// function buyAllStreets(player) {
+//   var streets = generateStreetPositions();
+//
+//   // Sort an array numerically
+//   // Can't belive this isn't a built in function in JavaScript
+//   function sortNumber(a,b) {
+//       return a - b;
+//   }
+//   streets.sort(sortNumber);
+//   for(var i = 0; i < streets.length; i++) {
+//     // Buy all the properties and a hotel on each
+//     buyUnsoldProperty(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//   }
+// }
+//
+// function playGame() {
+//   buyAllStreets(bank);
+//   movePlayer(players.player_2);
+// }
+//
+// playGame();

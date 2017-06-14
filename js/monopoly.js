@@ -6,10 +6,9 @@
 
 //TO:DO Make snake eyes function in a way that actually makes sense e.g. not pay twice..
 
-// 14.06.2017 An overly complex function I created that in essence does the exact same thing as buyUnsoldProperty()
-// which I created earlier today. I was sleep deprived when I created the other and am unsure why I decided to do it in
-// such a complicated way. However, I feel like there must be some reason and that if I keep if for future reference
-// I will most certainly end up thanking myself religiously later.
+// 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
+// I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
+// there must be some reasoning behind it and that if I keep if for future reference I will most certainly end up thanking myself later.
 
 // function buyPropertyOld(player, position) {
 //   var targetProperty = returnProperty(position);
@@ -58,7 +57,15 @@ function generateStreetPositions() {
   return streetPositions;
 }
 
-// TO:DO Ensure the player can roll again if they get snake eyes
+// Used in utilities when you only roll a single dice
+// 03:22 - Also comes in handy when you roll two dice
+function rollSingleDice() {
+  var dice = Math.floor((Math.random() * 6) + 1);
+  return dice;
+}
+
+// TO:DO Ensure the player can roll again if they get snake eyes.
+// The ability to see if they did so is there, just not sure how to use the information.
 function rollDice() {
   var dice_1 = rollSingleDice();
   var dice_2 = rollSingleDice();
@@ -68,12 +75,6 @@ function rollDice() {
   var diceOutcome = [];
   diceOutcome.push(sum, snakeEyes);
   return diceOutcome;
-}
-
-// Used in utilities when you only roll a single dice
-function rollSingleDice() {
-  var dice = Math.floor((Math.random() * 6) + 1);
-  return dice;
 }
 
 function removeCash(player, amount) {
@@ -107,6 +108,20 @@ function buyHouse(player, position) {
   if(owner == player && player.cash >= housePrice) {
     if(numHouses < 5) {
       numHouses += 1;
+    }
+  }
+  targetProperty.num_houses = numHouses;
+}
+
+function sellHouse(player, position) {
+  var targetProperty = returnProperty(position);
+  var housePrice = targetProperty.house_price;
+  var numHouses = targetProperty.num_houses;
+  var owner = targetProperty.owner;
+  if(owner == player) {
+    if(numHouses < 0) {
+      numHouses -= 1;
+      addCash(player, housePrice/2);
     }
   }
   targetProperty.num_houses = numHouses;

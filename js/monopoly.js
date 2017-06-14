@@ -1,12 +1,5 @@
-//TO:DO Add community chests
-//TO:DO Add jail system
-  //TO:DO RE: JAIL - Keep track of how many times the user has tried to get out of jail
-  //TO:DO RE: JAIL - Make sure the user can get out of jail either by paying or using a card
-  //TO:DO RE: JAIL - Jail the player if they roll snake eyes three times in a row. Maybe a turn system makes sense after all?
-
-//TO:DO Make snake eyes function in a way that actually makes sense e.g. not pay twice..
-//TO:DO Iron out quirks with bank as owner, especially for utilities and stations
-//TO:DO Create blocks for start, jailvist, free parking and jail
+//TO:DO Make rolling snake eyes function in a way that actually makes sense e.g. not pay twice..
+//TO:DO Create blocks for start, jailvisit, free parking and jail itself
 //TO:DO Figure out why removeCash() sometimes returns NaN.
 
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
@@ -100,6 +93,7 @@ function passStart(player) {
 
 function landOnStart(player) {
   console.log("You land on start, receive $400");
+  player.position = 0;
   addCash(player, 400);
 }
 
@@ -200,7 +194,7 @@ function goToJail(player) {
 function completeActions(player) {
   landOnProperty(player);
   payTax(player);
-  drawChanceCard(player);
+  drawChanceOrdChest(player);
 }
 
 function jailRoll(player) {
@@ -252,7 +246,6 @@ function getNewPosition(player) {
   var currentPosition = player.position;
   var newPosition = currentPosition + moveDistance;
   if(newPosition == 40) {
-    player.position = 0;
     landOnStart(player);
   } else if(newPosition == 20) {
     goToJail(player);
@@ -366,33 +359,49 @@ function landOnProperty(player) {
   }
 }
 
-function drawChanceCard(player) {
-  // Check if there are unused chance cards left
-  function checkChanceCards() {
-    var chanceCardArray = chanceCards.cards;
+function drawChanceOrChest(player) {
+  var cardType = communityChests;
+  switch(player.position) {
+    case 7:
+    case 22:
+    case 36:
+      cardType = chanceCards;
+      break;
+    case 2:
+    case 17:
+    case 33:
+      cardType = communityChests;
+      break;
+  }
+
+  // Shuffle any pile of cards given its card type
+  function shuffleCardPile(cardType) {
+    for(var i = 0; i < cardType.cards.length; i++) {
+      cardType.cards[i].used = false;
+    }
+  }
+
+  // Check if there are community chests left to be used
+  function checkChanceCards(cardType) {
+    var cardArray = cardType.cards;
     // Check if there are any cards left that can be used
-    var unusedCount = 0;
-    for(var i = 0; i < chanceCardArray.length; i++) {
-      if(chanceCardArray[i].used == false) {
-        unusedCount += 1;
+    var cardUnusedCount = 0;
+    for(var i = 0; i < cardType.cards.length; i++) {
+      if(cardArray[i].used == false) {
+        chestUnusedCount += 1;
       }
     }
     // If there aren't any cards left to be use, shuffle the cards
     // We use <= in case we somehow accidentally manage to draw twice on a snake eyes roll
-    if(unusedCount <= 0) {
-      shuffleChanceCards();
+    if(cardUnusedCount <= 0) {
+      shuffleCardPile(cardType);
     }
   }
-  // Function to shuffle the chance cards
-  function shuffleChanceCards() {
-    for(var i = 0; i < chanceCards.cards.length; i++) {
-      chanceCards.cards[i].used = false;
-    }
-  }
+
   // Grab a random chance card until you get one that is unused
   function getChanceCard() {
-    var randomCardIndex = Math.floor(Math.random() * chanceCards.cards.length);
-    var chanceCard = chanceCards.cards[randomCardIndex];
+    var randomCardIndex = Math.floor(Math.random() * cardType.cards.length);
+    var chanceCard = cardType.cards[randomCardIndex];
     if(chanceCard.used == true) {
       chanceCard = getChanceCard();
     }
@@ -400,10 +409,11 @@ function drawChanceCard(player) {
   }
 
   // Handle what happens when the user finally draws a chance card
-  checkChanceCards();
+  checkChanceCards(communityChests);
+  checkChanceCards(chanceCards);
   var position = player.position;
   var chanceCard = getChanceCard();
-  if(position == 7 || position == 22 || position == 36) {
+  if(cardType == communityChests || cardType == chanceCards) {
     console.log("You drew: " + chanceCard.name);
     console.log("Description: " + chanceCard.description);
     chanceCard.action(player);
@@ -411,12 +421,11 @@ function drawChanceCard(player) {
   }
 }
 
-// TO:DO You currently play twice if you get snake-eyes, maybe fix this :-)))
 function movePlayer(player) {
   getNewPosition(player);
   if(player.jailed != true) {
     payTax(player);
-    drawChanceCard(player);
+    drawChanceOrChest(player);
     landOnProperty(player);
     buyUnsoldProperty(player, player.position);
   } else {

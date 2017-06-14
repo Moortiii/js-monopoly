@@ -1,4 +1,5 @@
-// Generic function to create a new player with certain properties.
+/* - - - Constructor Functions - - - */
+
 function Player(name, cash, position, properties, stations, utilities, has_turned) {
   this.name = name;
   this.cash = cash;
@@ -17,7 +18,6 @@ function Bank(name, cash, properties, utilities, stations) {
   this.stations = stations;
 }
 
-// Constructor for the tax-properties
 function Tax(name, price, position) {
   this.name = name;
   this.price = price;
@@ -29,7 +29,6 @@ function chanceProperty(name, position) {
   this.position = position;
 }
 
-// Functions to create the properties, stations and utilites
 function Property(name, position, rent, house_1, house_2, house_3, house_4, hotel, house_price, mortgage_value, num_houses, price, type, owner) {
   this.name = name;
   this.position = position;
@@ -45,12 +44,6 @@ function Property(name, position, rent, house_1, house_2, house_3, house_4, hote
   this.price = price;
   this.type = type;
   this.owner = owner;
-}
-
-function FreeParking(name, position, price) {
-  this.name = name;
-  this.position = position;
-  this.price = price;
 }
 
 function Station(name, position, owns_1, owns_2, owns_3, owns_4, mortgage_value, price, type, owner) {
@@ -77,11 +70,26 @@ function Utility(name, position, owns_1_multiplier, owns_2_multiplier, mortgage_
   this.owner = owner;
 }
 
+// Not sure if this function is neccessary, time will show
+// function FreeParking(name, position, price) {
+//   this.name = name;
+//   this.position = position;
+//   this.price = price;
+// }
+
 function ChanceCard(name, description, action) {
   this.name = name;
   this.description = description;
   this.action = action;
 }
+
+function CommunityChest(name, description, action) {
+  this.name = name;
+  this.description = description;
+  this.action = action;
+}
+
+/* - - - Community Chest and Chance Card Functions - - - */
 
 function chanceMoveToProperty(propertyPosition, player) {
   var targetProperty = returnProperty(propertyPosition);
@@ -110,6 +118,43 @@ function chanceMoveUtility(player) {
   }
 }
 
+// Allows you to collect an arbitrary amount of cash from an arbitrary amount of players
+function collectSum(player, amount) {
+  var you = player;
+  for(person in players) {
+    if(players[person] != you) {
+      removeCash(players[person], amount);
+      addCash(you, amount);
+    }
+  }
+  console.log(sum);
+}
+
+// Function to handle the property repair communityChest or chanceCard
+function propertyRepairs(player, pricePerHouse, pricePerHotel) {
+  this.pricePerHouse = pricePerHouse;
+  this.pricePerHotel = pricePerHotel;
+  var numberOfHouses = 0;
+  var numberOfHotels = 0;
+  var houseSum = 0;
+  var hotelSum = 0;
+  for(var i = 0; i < player.properties.length; i++) {
+    var numHouses = player.properties[i].num_houses;
+    // This may seem strange, but for simplicitys sake, 1 hotel is just a property with 5 houses
+    if(numHouses < 5) {
+      numberOfHouses += numHouses;
+    } else {
+      numberOfHotels += 1;
+    }
+    console.log("Num_houses: " + numHouses);
+    console.log("Variable Houses: " + numberOfHouses);
+  }
+  houseSum = numberOfHouses * pricePerHouse;
+  hotelSum = numberOfHotels * pricePerHotel;
+  console.log("House sum: " + houseSum);
+  console.log("Hotel sum: " + hotelSum);
+}
+
 // Create the players for the game
 var players = {
   player_1: new Player("Morten", 500000, 0, [], [], [], false),
@@ -118,12 +163,68 @@ var players = {
 
 var bank = new Bank("bank", 500000, [], [], []);
 
+// Create the community chests
+var communityChests = {
+  cards: [
+    new CommunityChest("Head Start", "Advance to start and collect $400", function(player) {
+      landOnStart(player);
+    }),
+    new CommunityChest("Lousy Banker", "Bank error in your favor, collect $200", function(player) {
+      addCash(player, 200);
+    }),
+    new CommunityChest("An apple a day", "You crash your bike and have to get checked out at the hospital. Pay $50 in medical fees", function(player) {
+      removeCash(player, 50);
+    }),
+    new CommunityChest("Investment Banker", "Your stocks rise and you sell on a high, collect $300", function(player) {
+      addCash(player, 300);
+    }),
+    new CommunityChest("Shawshank Redemption", "Get out of jail free. This card can be kept until needed or traded with other players", function(player) {
+      //player.jailCards.push(1);
+    }),
+    new CommunityChest("Not so smooth criminal", "Go directly to jail. Do not pass start or collect $200", function(player) {
+      goToJail(player);
+    }),
+    new CommunityChest("Sharing is caring", "Collect $50 from all other players for opening tickets to tonight's game", function(player) {
+      collectSum(player, 50);
+    }),
+    new CommunityChest("Boxing Day!", "You empty your Holiday Fund for the upcoming celebration, collect $100", function(player) {
+      addCash(player, 100);
+    }),
+    new CommunityChest("Are you 60 yet?", "It's your birthday! Collect $10 from each player", function(player) {
+      collectSum(player, 10);
+    }),
+    new CommunityChest("Set for life", "Life insurance matters, collect $100", function(player) {
+      addCash(player, 100);
+    }),
+    new CommunityChest("That's sick", "Pay hospital fees of $100", function(player) {
+      removeCash(player, 100);
+    }),
+    new CommunityChest("You're still not in Norway", "Pay $150 in school fees for next semester's books", function(player) {
+      removeCash(player, 150);
+    }),
+    new CommunityChest("Live to serve", "You serve as a consultant for a client, receive $25", function(player) {
+      addCash(player, 25);
+    }),
+    new CommunityChest("Beautiful, but not gorgeus", "You come second place in a beauty competetion, collect $10", function(player) {
+      addCash(player, 10);
+    }),
+    new CommunityChest("Bob's your uncle", "Your uncle in America sends you a check, receive $100", function(player) {
+      addCash(player, 100);
+    }),
+    new CommunityChest("I'd rather just move", "Your streets are being repaired. Pay $40 per house and $115 per hotel on all your properties", function(player) {
+      propertyRepairs(player, 40, 115);
+    })
+  ]
+};
+
 // Create the chance cards
 var chanceCards = {
   cards: [
     new ChanceCard("Up-up and away we go", "Advance to start and collect $400", function(player) {
-      player.position = 0
       landOnStart(player);
+    }),
+    new ChanceCard("The girl with the matches", "Your houses and hotels are burning. Pay $40 per house and $115 per hotel on all your properties in damage costs", function(player) {
+      propertyRepairs(player, 40, 115);
     }),
     new ChanceCard("Moving on..", "Advance to Trafalgar Square. - If you pass start, collect $200", function(player) {
       chanceMoveToProperty(24, player);
@@ -138,10 +239,7 @@ var chanceCards = {
       goToJail(player);
     }),
     new ChanceCard("Sweet Freedom", "Get out of jail free. Use this card to get out of jail at any time. This card can be stored for later or traded to other players", function(player) {
-      // var jailCard =
-      // player.cards.push(jailCard);
-      // How the hell would I do this..
-      console.log("LOL");
+      //player.jailCards.push(1);
     }),
     new ChanceCard("Hold up!", "Go back three spaces", function(player) {
       player.position -= 3;

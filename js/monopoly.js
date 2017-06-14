@@ -44,6 +44,73 @@ function returnProperty(position) {
   return propertyObject;
 }
 
+// TO:DO Ensure the player can roll again if they get snake eyes
+function rollDice() {
+  var dice_1 = Math.floor((Math.random() * 6) + 1);
+  var dice_2 = Math.floor((Math.random() * 6) + 1);
+  console.log("Dice 1: " + dice_1 + "\nDice 2: " + dice_2);
+  var sum = dice_1 + dice_2;
+  var snakeEyes = dice_1 == dice_2;
+  var diceOutcome = [];
+  diceOutcome.push(sum, snakeEyes);
+  return diceOutcome;
+}
+
+// Used in utilities when you only roll a single dice
+function rollSingleDice() {
+  var dice = Math.floor((Math.random() * 6) + 1);
+  return dice;
+}
+
+function removeCash(player, amount) {
+  player.cash -= amount;
+}
+
+function addCash(player, amount) {
+  player.cash += amount;
+}
+
+function transferCash(player1, player2, amount) {
+  removeCash(player1, amount);
+  addCash(player2, amount);
+}
+
+function passStart(player) {
+  console.log("You pass start, receive $200");
+  addCash(player, 200);
+}
+
+function landOnStart(player) {
+  console.log("You land on start, receive $400");
+  addCash(player, 400);
+}
+
+function buyHouse(player, position) {
+  var targetProperty = returnProperty(position);
+  var housePrice = targetProperty.house_price;
+  var numHouses = targetProperty.num_houses;
+  var owner = targetProperty.owner;
+  if(owner == player && player.cash >= housePrice) {
+    if(numHouses < 5) {
+      numHouses += 1;
+    }
+  }
+  targetProperty.num_houses = numHouses;
+}
+
+function payTax(player) {
+  var superTax = returnProperty(38);
+  var incomeTax = returnProperty(4);
+  if(player.position == superTax.position) {
+    removeCash(player, superTax.price)
+    console.log("You pay $" + superTax.price + " in tax.");
+  }
+  else if(player.position == incomeTax.position) {
+    removeCash(player, incomeTax.price);
+    console.log("You pay $" + incomeTax.price + " in tax.");
+  }
+}
+
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
   var propertyPrice = targetProperty.price;
@@ -90,31 +157,23 @@ function unMortgageProperty(player, position) {
 // This also handles distributing cash if they pass or land on start
 // If they land on an owned property, they pay rent.
 
-// TO:DO You currently play twice if you get snake-eyes :-)))
-function movePlayer(player) {
-  function getNewPosition() {
-    var diceRoll = rollDice();
-    var moveDistance = diceRoll[0];
-    var snakeEyes = diceRoll[1];
+function getNewPosition() {
+  var diceRoll = rollDice();
+  var moveDistance = diceRoll[0];
+  var snakeEyes = diceRoll[1];
 
-    var currentPosition = player.position;
-    var newPosition = currentPosition + moveDistance;
-    if(newPosition == 40) {
-      player.position = 0;
-      landOnStart(player);
-    } else if(newPosition > 40) {
-      var squaresLeft = 40 - currentPosition;
-      player.position = -squaresLeft + moveDistance;
-      passStart(player);
-    } else {
-      player.position = newPosition;
-    }
+  var currentPosition = player.position;
+  var newPosition = currentPosition + moveDistance;
+  if(newPosition == 40) {
+    player.position = 0;
+    landOnStart(player);
+  } else if(newPosition > 40) {
+    var squaresLeft = 40 - currentPosition;
+    player.position = -squaresLeft + moveDistance;
+    passStart(player);
+  } else {
+    player.position = newPosition;
   }
-
-  getNewPosition();
-  payTax(player);
-  drawChanceCard(player);
-  landOnProperty(player);
 }
 
 function landOnProperty(player) {
@@ -243,71 +302,12 @@ function drawChanceCard(player) {
   }
 }
 
-function buyHouse(player, position) {
-  var targetProperty = returnProperty(position);
-  var housePrice = targetProperty.house_price;
-  var numHouses = targetProperty.num_houses;
-  var owner = targetProperty.owner;
-  if(owner == player && player.cash >= housePrice) {
-    if(numHouses < 5) {
-      numHouses += 1;
-    }
-  }
-  targetProperty.num_houses = numHouses;
-}
-// TO:DO Ensure the player can roll again if they get snake eyes
-function rollDice() {
-  var dice_1 = Math.floor((Math.random() * 6) + 1);
-  var dice_2 = Math.floor((Math.random() * 6) + 1);
-  console.log("Dice 1: " + dice_1 + "\nDice 2: " + dice_2);
-  var sum = dice_1 + dice_2;
-  var snakeEyes = dice_1 == dice_2;
-  var diceOutcome = [];
-  diceOutcome.push(sum, snakeEyes);
-  return diceOutcome;
-}
-
-function rollSingleDice() {
-  var dice = Math.floor((Math.random() * 6) + 1);
-  return dice;
-}
-
-function payTax(player) {
-  var superTax = returnProperty(38);
-  var incomeTax = returnProperty(4);
-  if(player.position == superTax.position) {
-    removeCash(player, superTax.price)
-    console.log("You pay $" + superTax.price + " in tax.");
-  }
-  else if(player.position == incomeTax.position) {
-    removeCash(player, incomeTax.price);
-    console.log("You pay $" + incomeTax.price + " in tax.");
-  }
-}
-// Generic functions to add, remove or transfer cash from a player's hand
-function removeCash(player, amount) {
-  player.cash -= amount;
-}
-
-function addCash(player, amount) {
-  player.cash += amount;
-}
-
-function transferCash(player1, player2, amount) {
-  removeCash(player1, amount);
-  addCash(player2, amount);
-}
-
-// Receive $200 if you pass start
-function passStart(player) {
-  console.log("You pass start, receive $200");
-  addCash(player, 200);
-}
-
-// Receive $400 if you land on start
-function landOnStart(player) {
-  console.log("You land on start, receive $400");
-  addCash(player, 400);
+// TO:DO You currently play twice if you get snake-eyes :-)))
+function movePlayer(player) {
+  getNewPosition();
+  payTax(player);
+  drawChanceCard(player);
+  landOnProperty(player);
 }
 
 function generateStreetPositions() {

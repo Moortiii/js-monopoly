@@ -1,6 +1,6 @@
 /* - - - Constructor Functions - - - */
 
-function Player(name, cash, position, properties, stations, utilities, has_turned) {
+function Player(name, cash, position, properties, stations, utilities, has_turned, jail_cards) {
   this.name = name;
   this.cash = cash;
   this.position = position;
@@ -8,6 +8,7 @@ function Player(name, cash, position, properties, stations, utilities, has_turne
   this.stations = stations;
   this.utilities = utilities;
   this.has_turned = has_turned;
+  this.jail_cards = jail_cards;
 }
 
 function Bank(name, cash, properties, utilities, stations) {
@@ -34,7 +35,7 @@ function ChestProperty(name, position) {
   this.position = position;
 }
 
-function Property(name, position, rent, house_1, house_2, house_3, house_4, hotel, house_price, mortgage_value, num_houses, price, type, owner) {
+function Property(name, position, rent, house_1, house_2, house_3, house_4, hotel, house_price, mortgage_value, num_houses, price, type, owner, color) {
   this.name = name;
   this.position = position;
   this.rent = rent;
@@ -49,6 +50,7 @@ function Property(name, position, rent, house_1, house_2, house_3, house_4, hote
   this.price = price;
   this.type = type;
   this.owner = owner;
+  this.color = color;
 }
 
 function Station(name, position, owns_1, owns_2, owns_3, owns_4, mortgage_value, price, type, owner) {
@@ -177,8 +179,8 @@ function propertyRepairs(player, pricePerHouse, pricePerHotel) {
 
 // Create the players for the game
 var players = {
-  player_1: new Player("Morten", 500000, 0, [], [], [], false),
-  player_2: new Player("Kjetil", 3000, 0, [], [], [], false)
+  player_1: new Player("Morten", 500000, 0, [], [], [], false, 0),
+  player_2: new Player("Kjetil", 50000, 0, [], [], [], false, 0)
 };
 
 var bank = new Bank("bank", 500000, [], [], []);
@@ -207,7 +209,7 @@ var communityChests = {
       addCash(player, 300);
     }),
     new CommunityChest("Shawshank Redemption", "Get out of jail free. This card can be kept until needed or traded with other players", function(player) {
-      //player.jailCards.push(1);
+      player.jail_cards += 1;
     }),
     new CommunityChest("Not so smooth criminal", "Go directly to jail. Do not pass start or collect $200", function(player) {
       goToJail(player);
@@ -261,18 +263,18 @@ var chanceCards = {
       chanceMoveToProperty(14, player);
     }),
     new ChanceCard("Pedal to the metal", "Take a trip to Marylebone Station. - If you pass start, collect $200", function(player) {
-      chanceMoveToProperty(5, player);
+      chanceMoveToProperty(15, player);
     }),
     new ChanceCard("Locked up", "Go directly to jail. Do not pass start or collect $200", function(player) {
       goToJail(player);
     }),
     new ChanceCard("Sweet Freedom", "Get out of jail free. Use this card to get out of jail at any time. This card can be stored for later or traded to other players", function(player) {
-      //player.jailCards.push(1);
+      player.jail_cards += 1;
     }),
     new ChanceCard("Hold up!", "Go back three spaces", function(player) {
       player.position -= 3;
       payTax(player);
-      landOnProperty(player);
+      landOnProperty(player, player.position);
     }),
     new ChanceCard("You're not in Norway", "Pay $150 in school fees", function(player) {
       removeCash(player, 150);
@@ -301,42 +303,42 @@ var chanceCards = {
 // Define each of the properties, stations and utilities explicitly.
 var properties = {
   magenta: [
-    new Property("Old Kent Road", 1, 2, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street", bank),
-    new Property("Whitechapel Road", 3, 4, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street", bank)
+    new Property("Old Kent Road", 1, 2, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street", bank, "magenta"),
+    new Property("Whitechapel Road", 3, 4, 10, 30, 90, 160, 250, 30, 50, 0, 60, "Street", bank, "magenta")
   ],
   light_blue: [
-    new Property("Angel Islington", 6, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street", bank),
-    new Property("Euston Road", 8, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street", bank),
-    new Property("Pentonville Road", 9, 8, 40, 100, 300, 450, 600, 50, 60, 0, 120, "Street", bank)
+    new Property("Angel Islington", 6, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street", bank, "light_blue"),
+    new Property("Euston Road", 8, 6, 30, 90, 270, 400, 550, 50, 50, 0, 100, "Street", bank, "light_blue"),
+    new Property("Pentonville Road", 9, 8, 40, 100, 300, 450, 600, 50, 60, 0, 120, "Street", bank, "light_blue")
   ],
   pink: [
-    new Property("Pall Mall", 11, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street", bank),
-    new Property("Whitehall", 13, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street", bank),
-    new Property("Northumberland Road", 14, 12, 60, 180, 500, 700, 900, 100, 80, 0, 160, "Street", bank)
+    new Property("Pall Mall", 11, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street", bank, "pink"),
+    new Property("Whitehall", 13, 10, 50, 150, 450, 625, 750, 100, 70, 0, 140, "Street", bank, "pink"),
+    new Property("Northumberland Road", 14, 12, 60, 180, 500, 700, 900, 100, 80, 0, 160, "Street", bank, "pink")
   ],
   orange: [
-    new Property("Bow Street", 16, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street", bank),
-    new Property("Marlborough Street", 18, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street", bank),
-    new Property("Vine Street", 19, 16, 70, 200, 550, 750, 950, 100, 90, 0, 200, "Street", bank)
+    new Property("Bow Street", 16, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street", bank, "orange"),
+    new Property("Marlborough Street", 18, 14, 70, 200, 550, 750, 950, 100, 90, 0, 180, "Street", bank, "orange"),
+    new Property("Vine Street", 19, 16, 70, 200, 550, 750, 950, 100, 90, 0, 200, "Street", bank, "orange")
   ],
   red: [
-    new Property("Strand", 21, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street", bank),
-    new Property("Fleet Street", 23, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street", bank),
-    new Property("Trafalgar Square", 24, 20, 90, 250, 700, 875, 1050, 150, 110, 0, 240, "Street", bank)
+    new Property("Strand", 21, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street", bank, "red"),
+    new Property("Fleet Street", 23, 18, 90, 250, 700, 875, 1050, 150, 110, 0, 220, "Street", bank, "red"),
+    new Property("Trafalgar Square", 24, 20, 90, 250, 700, 875, 1050, 150, 110, 0, 240, "Street", bank, "red")
   ],
   yellow: [
-    new Property("Leicester Square", 26, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street", bank),
-    new Property("Coventry Street", 27, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street", bank),
-    new Property("Picadilly", 29, 24, 120, 360, 850, 1025, 1200, 150, 150, 0, 280, "Street", bank)
+    new Property("Leicester Square", 26, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street", bank, "yellow"),
+    new Property("Coventry Street", 27, 22, 110, 330, 800, 975, 1150, 150, 150, 0, 260, "Street", bank, "yellow"),
+    new Property("Picadilly", 29, 24, 120, 360, 850, 1025, 1200, 150, 150, 0, 280, "Street", bank, "yellow")
   ],
   green: [
-    new Property("Regent Street", 31, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street", bank),
-    new Property("Oxford Street", 32, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street", bank),
-    new Property("Bond Street", 34, 28, 150, 450, 1000, 1200, 1400, 150, 200, 0, 320, "Street", bank)
+    new Property("Regent Street", 31, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street", bank, "green"),
+    new Property("Oxford Street", 32, 22, 130, 390, 900, 1100, 1276, 150, 200, 0, 300, "Street", bank, "green"),
+    new Property("Bond Street", 34, 28, 150, 450, 1000, 1200, 1400, 150, 200, 0, 320, "Street", bank, "green")
   ],
   dark_blue: [
-    new Property("Park Lane", 37, 35, 175, 500, 1100, 1300, 1500, 200, 175, 0, 350, "Street", bank),
-    new Property("Mayfair", 39, 50, 200, 600, 1400, 1700, 2000, 200, 200, 0, 400, "Street", bank)
+    new Property("Park Lane", 37, 35, 175, 500, 1100, 1300, 1500, 200, 175, 0, 350, "Street", bank, "dark_blue"),
+    new Property("Mayfair", 39, 50, 200, 600, 1400, 1700, 2000, 200, 200, 0, 400, "Street", bank, "dark_blue")
   ],
   stations: [
     new Station("King's Cross Station", 5, 25, 50, 100, 200, 100, 200, "Station", bank),

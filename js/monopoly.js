@@ -1,9 +1,8 @@
 //TO:DO Make rolling snake eyes function in a way that actually makes sense e.g. not pay twice..
-//TO:DO Make a functioning Get Out Of Jail Free card.
 
 /* KNOWN BUGS */
-// If you land on a chance card at position 36 and move 3 spaces back you don't draw a community chest card
-// After drawing a chance or community card you can't buy properties..
+// If you land on a chance card at position 36 and move 3 spaces back you don't draw a
+// community chest card (Not sure if this still applies, it's really fucking hard to test).
 
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
 // I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
@@ -42,6 +41,61 @@ function returnProperty(position) {
   return propertyObject;
 }
 
+function isAllMortgaged(player) {
+  var mortgagedCount = 0;
+  var propertyCount = player.properties.length;
+  for(var i = 0; i < propertyCount; i++) {
+    var targetProperty = returnProperty(player.properties[i].position);
+    if(targetProperty.mortgaged == true) {
+      mortgagedCount += 1;
+    }
+  }
+  console.log("Property count: " + propertyCount);
+  console.log("Mortgage count: " + mortgagedCount);
+  return mortgagedCount == propertyCount;
+}
+
+function declareBankrupcy(player) {
+  //TO:DO Allow the player too choose what properties they want to sell
+  // For every property the player has:
+  var count = 0;
+  while(count < player.properties.length) {
+    // If their cash is below zero:
+    if(player.cash < 0) {
+      // First sell all houses on the property for cash
+      var targetProperty = returnProperty(player.properties[count].position);
+      var numHouses = targetProperty.num_houses;
+      for(var i = 0; i < numHouses; i++) {
+        sellHouse(player, targetProperty.position);
+      }
+      // If their cash is still below zero:
+      if(player.cash < 0) {
+      // Then mortgage the property for cash:
+        mortgageProperty(player, targetProperty.position);
+        console.log("You mortgage this property " + player.properties[count].name);
+        count += 1;
+      }
+    }
+    // Finally after going through every property
+    // Check to make sure they've mortgaged them all
+    var hasMortgagedAll = isAllMortgaged(player);
+    // console.log(hasMortgagedAll);
+    // If their cash is still below zero and all of them are mortgaged:
+    if(player.cash < 0 && hasMortgagedAll == true) {
+      // Transfer all of their properties to the bank
+      for(var i = 0; i < player.properties.length; i++) {
+        player.properties[i].owner = bank;
+      }
+      // Then finally inform everyone that they have declared bankrupcy
+      console.log(player.name + " has declared bankrupcy. All his properties go to the bank.");
+      // I could do players.remove(player) here, but that doesn't actually fully remove
+      // the player from the players object, it just leaves their entry as undefined
+      // Which gives me a whole new world of trouble when I try to loop over each player
+      // In the event of a turn-based system.
+    }
+  }
+}
+
 // Returns an array with the indices of all properties that aren't free parking, jail, start, community chest, taxes or chance cards.
 function generateStreetPositions() {
   var property = Object.values(properties);
@@ -49,6 +103,19 @@ function generateStreetPositions() {
   for (var i = 0; i < Object.keys(properties).length; i++) {
     for (var j = 0; j < property[i].length; j++) {
       if(property[i][j].type == ["Street"] || property[i][j].type == ["Utility"]  || property[i][j].type == ["Station"]) {
+        streetPositions.push(property[i][j].position);
+      }
+    }
+  }
+  return streetPositions;
+}
+
+function generateOnlyStreets() {
+  var property = Object.values(properties);
+  var streetPositions = [];
+  for (var i = 0; i < Object.keys(properties).length; i++) {
+    for (var j = 0; j < property[i].length; j++) {
+      if(property[i][j].type == ["Street"]) {
         streetPositions.push(property[i][j].position);
       }
     }
@@ -100,15 +167,65 @@ function landOnStart(player) {
   addCash(player, 400);
 }
 
+// This seems like an incredibly ineloquent way to do this but it works for now
+function landOnFreeParking() {
+  console.log("You land on free parking, nothing good (or bad) happens");
+}
+
+// This seems like an incredibly ineloquent way to do this but it works for now
+function visitJail() {
+  console.log("You're visiting jail. The gives you a grumpy look.");
+}
+
+// Allows the player to use their get out of jail free card if they have one.
+function getOutOfJailFree(player) {
+  if(player.jail_cards > 0) {
+    player.jail_cards -= 1;
+    player.jailed = false;
+    completeActions(player);
+  } else {
+    console.log("You don't have any get out of jail free cards.");
+  }
+}
+
+// This function checks if a player owns all streets of a given color
+function checkOwnsEntireColor(player, position) {
+  var targetProperty = returnProperty(position);
+  var color = targetProperty.color;
+  var streetCount = 0;
+  var maxStreets = properties[color].length;
+  // Check how many of a given street a player has
+  for(var i = 0; i < properties[color].length; i++) {
+    if(properties[color][i].owner == player) {
+      streetCount += 1;
+    }
+  }
+  console.log("Max streets: " + maxStreets);
+  console.log("Street count: " + streetCount);
+  return streetCount == maxStreets;
+}
+
 function buyHouse(player, position) {
   var targetProperty = returnProperty(position);
   var housePrice = targetProperty.house_price;
   var numHouses = targetProperty.num_houses;
   var owner = targetProperty.owner;
-  if(owner == player && player.cash >= housePrice) {
-    if(numHouses < 5) {
-      numHouses += 1;
+  var ownsAll = checkOwnsEntireColor(player, position);
+  // I could in truth drop the == true, but I like to keep it there for clarity.
+  if(ownsAll == true) {
+    if(owner == player && player.cash >= housePrice) {
+      if(numHouses < 5) {
+        numHouses += 1;
+        console.log("You buy a house on this property");
+        if(numHouses == 5) {
+          console.log("You now have a hotel here.");
+        } else {
+          console.log("You now have " + numHouses + " houses here.");
+        }
+      }
     }
+  } else {
+    console.log("Sorry, you don't own all properties of that street yet.");
   }
   targetProperty.num_houses = numHouses;
 }
@@ -119,12 +236,14 @@ function sellHouse(player, position) {
   var numHouses = targetProperty.num_houses;
   var owner = targetProperty.owner;
   if(owner == player) {
-    if(numHouses < 0) {
+    if(numHouses > 0) {
       numHouses -= 1;
       addCash(player, housePrice/2);
+      targetProperty.num_houses = numHouses;
+      console.log("You sell a house on " + targetProperty.name);
+      console.log("You have " + numHouses + " houses left on this street.");
     }
   }
-  targetProperty.num_houses = numHouses;
 }
 
 function payTax(player) {
@@ -140,12 +259,20 @@ function payTax(player) {
   }
 }
 
+function askToBuy() {
+  //var wantsToBuy = prompt("Do you want to buy this property?").toLowerCase();
+  // return wantsToBuy == "y" || wantsToBuy == "yes";
+
+  //!IMPORTANT Return true for testing purposes, uncomment above code and remove this when finished
+  return true;
+}
+
 function buyUnsoldProperty(player, position) {
   var targetProperty = returnProperty(position);
   var propertyPrice = targetProperty.price;
   if(player.cash >= propertyPrice && targetProperty.owner == bank) {
-    var wantsToBuy = prompt("Do you want to buy this property?").toLowerCase();
-    if(wantsToBuy == "y" || wantsToBuy == "yes") {
+    var wantsToBuy = askToBuy();
+    if(wantsToBuy) {
       switch(targetProperty.type) {
         case "Station":
           player.stations.push(targetProperty);
@@ -157,23 +284,30 @@ function buyUnsoldProperty(player, position) {
           player.properties.push(targetProperty);
           targetProperty.num_houses = 0;
           break;
-      }
-    } else {
+        }
+        targetProperty.owner = player;
+        targetProperty.sold = true;
+        removeCash(player, propertyPrice);
+        console.log("You buy the property");
+      } else {
       console.log("You choose not to buy the property.");
     }
   }
-  targetProperty.owner = player;
-  targetProperty.sold = true;
-  removeCash(player, propertyPrice);
 }
 
 function mortgageProperty(player, position) {
   var targetProperty = returnProperty(position);
   var mortgagePrice = targetProperty.mortgage_value;
-
+  var numHouses = targetProperty.num_houses;
+  console.log("Num houses: " + numHouses);
   if(targetProperty.owner == player && targetProperty.mortgaged != true) {
-    addCash(player, mortgagePrice);
-    targetProperty.mortgaged = true;
+    if(numHouses > 0) {
+      console.log("You have houses left on this property, you need to sell them first before you can mortgage it.");
+    } else {
+      addCash(player, mortgagePrice);
+      targetProperty.mortgaged = true;
+      console.log("You mortgage " + targetProperty.name);
+    }
   }
 }
 
@@ -191,11 +325,12 @@ function goToJail(player) {
   player.position = 10;
   player.jailed = true;
   player.jailedRounds = 0;
+  console.log("You're in jail");
 }
 
 // Corner Case Function: If the player has to be moved manually, make sure he/she still completes his actions as normal
 function completeActions(player) {
-  landOnProperty(player);
+  landOnProperty(player, player.position);
   payTax(player);
   drawChanceOrChest(player);
 }
@@ -205,6 +340,7 @@ function jailRoll(player) {
   var tryCount = 0;
 
   while(player.jailed == true && tryCount < 3) {
+    console.log("You're in jail.");
     console.log("TryCount: " + tryCount);
     var diceRoll = rollDice();
     var diceSum = diceRoll[0];
@@ -248,17 +384,30 @@ function getNewPosition(player) {
 
   var currentPosition = player.position;
   var newPosition = currentPosition + moveDistance;
-  if(newPosition == 40) {
-    landOnStart(player);
-  } else if(newPosition == 20) {
-    goToJail(player);
-  } else if(newPosition > 40) {
+  switch(newPosition) {
+    case 40:
+      landOnStart(player);
+      break;
+    case 30:
+      goToJail(player);
+      break;
+    case 20:
+      landOnFreeParking();
+      break;
+    case 10:
+      visitJail();
+      break;
+  }
+
+  //TO:DO Since I can't use logic inside a switch statement, consider if the entire thing should be an if-else chain for clarity.
+  if(newPosition > 40) {
     var squaresLeft = 40 - currentPosition;
     player.position = -squaresLeft + moveDistance;
     passStart(player);
   } else {
     player.position = newPosition;
   }
+  console.log("New position: " + player.position);
 }
 
 //TO:DO What does this one do??
@@ -348,6 +497,7 @@ function landOnProperty(player) {
     console.log("Owner: " + owner.name);
     if(owner == bank) {
       console.log("The bank currently owns this property");
+      buyUnsoldProperty(player, player.position);
     } else if(player == owner) {
       console.log("You own this property.")
     } else if(player != owner) {
@@ -442,29 +592,31 @@ function movePlayer(player) {
 
 //The functions below are for testing purposes only
 
-// function buyAllStreets(player) {
-//   var streets = generateStreetPositions();
-//
-//   // Sort an array numerically
-//   // Can't belive this isn't a built in function in JavaScript
-//   function sortNumber(a,b) {
-//       return a - b;
-//   }
-//   streets.sort(sortNumber);
-//   for(var i = 0; i < streets.length; i++) {
-//     // Buy all the properties and a hotel on each
-//     buyUnsoldProperty(player, streets[i]);
-//     buyHouse(player, streets[i]);
-//     buyHouse(player, streets[i]);
-//     buyHouse(player, streets[i]);
-//     buyHouse(player, streets[i]);
-//     buyHouse(player, streets[i]);
-//   }
-// }
-//
-// function playGame() {
-//   buyAllStreets(bank);
-//   movePlayer(players.player_2);
-// }
-//
-// playGame();
+function buyAllStreets(player) {
+  var streets = generateOnlyStreets();
+
+  // Sort an array numerically
+  // Can't belive this isn't a built in function in JavaScript
+  function sortNumber(a,b) {
+      return a - b;
+  }
+  streets.sort(sortNumber);
+  for(var i = 0; i < streets.length; i++) {
+    // Buy all the properties and a hotel on each
+    buyUnsoldProperty(player, streets[i]);
+  }
+  for(var i = 0; i < streets.length; i++) {
+    console.log(streets[i]);
+    buyHouse(player, streets[i]);
+    buyHouse(player, streets[i]);
+    buyHouse(player, streets[i]);
+  }
+
+  players.player_2.cash = -50000;
+}
+
+function playGame() {
+  buyAllStreets(players.player_2);
+}
+
+playGame();

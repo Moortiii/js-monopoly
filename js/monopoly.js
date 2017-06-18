@@ -1,7 +1,3 @@
-/* KNOWN BUGS */
-// If you land on a chance card at position 36 and move 3 spaces back you don't draw a
-// community chest card (Not sure if this still applies, it's really fucking hard to test).
-
 // 14.06.2017 An overly complex function I created eariler today that in essence does the exact same thing as buyUnsoldProperty().
 // I was sleep deprived when I created it and am unsure why I decided to do it in such a complicated way. However, I feel like
 // there must be some reasoning behind it and that if I keep if for future reference I will most certainly end up thanking myself later.
@@ -631,3 +627,12 @@ function movePlayer(player) {
 // }
 //
 // playGame();
+
+$(document).ready(function() {
+  $("#move-player-1").click(function() {
+    movePlayer(players.player_1);
+  })
+  $("#move-player-2").click(function() {
+    movePlayer(players.player_2);
+  })
+});

@@ -141,7 +141,7 @@ function chanceMoveUtility(player) {
 // Allows you to collect an arbitrary amount of cash from an arbitrary amount of players
 function collectSum(player, amount) {
   var you = player;
-  var sum;
+  var sum = 0;
   for(person in players) {
     if(players[person] != you) {
       sum += 50;
@@ -149,7 +149,7 @@ function collectSum(player, amount) {
       addCash(you, amount);
     }
   }
-  console.log(sum);
+  console.log("Sum " + sum);
 }
 
 // Function to handle the property repair communityChest or chanceCard
@@ -168,13 +168,13 @@ function propertyRepairs(player, pricePerHouse, pricePerHotel) {
     } else {
       numberOfHotels += 1;
     }
-    console.log("Num_houses: " + numHouses);
-    console.log("Variable Houses: " + numberOfHouses);
   }
   houseSum = numberOfHouses * pricePerHouse;
   hotelSum = numberOfHotels * pricePerHotel;
   console.log("House sum: " + houseSum);
   console.log("Hotel sum: " + hotelSum);
+  removeCash(player, houseSum);
+  removeCash(player, hotelSum);
 }
 
 // Create the players for the game
@@ -273,8 +273,7 @@ var chanceCards = {
     }),
     new ChanceCard("Hold up!", "Go back three spaces", function(player) {
       player.position -= 3;
-      payTax(player);
-      landOnProperty(player, player.position);
+      completeActions(player);
     }),
     new ChanceCard("You're not in Norway", "Pay $150 in school fees", function(player) {
       removeCash(player, 150);
@@ -360,10 +359,10 @@ var properties = {
   jail: [
     new Jail("Jail", 30, 0, function(player) {
       goToJail(player);
-    }),
-    new Jail("Jail Visit", 10, 0, function(player) {
-      console.log("You are visiting jail, however you are not actually jailed");
-    })
+    })//,
+    // new Jail("Jail Visit", 10, 0, function(player) {
+    //   console.log("You are visiting jail, however you are not actually jailed");
+    // })
   ],
   chance: [
     new ChanceProperty("Chance Red", 7),

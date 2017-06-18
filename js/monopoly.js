@@ -333,6 +333,13 @@ function completeActions(player) {
   buyUnsoldProperty(player, player.position);
 }
 
+function jailCompleteActions(player) {
+  landOnProperty(player, player.position);
+  payTax(player);
+  drawChanceOrChest(player);
+  buyUnsoldProperty(player, player.position);
+}
+
 function jailRoll(player) {
   var triesAllowed = 3;
   var tryCount = 0;
@@ -348,13 +355,13 @@ function jailRoll(player) {
     if(player.jailed == true && tryCount == 2) {
       player.jailedRounds += 1;
     }
-    console.log(diceSum); // For debugging purposes
 
     // If the player rolls snake eyes they get out of jail and move the distance rolled
     if(player.jailed == true && snakeEyes == true) {
       player.jailed = false;
+      player.position += diceSum;
       console.log("You rolled snake eyes! You are no longer jailed and move forward");
-      completeActions(player);
+      jailCompleteActions(player);
     } else {
       tryCount += 1;
     }
@@ -365,7 +372,7 @@ function jailRoll(player) {
       removeCash(player, 50)
       player.position += diceSum;
       console.log("You failed to get out of jail in three tries, pay $50 and move forward");
-      completeActions(player);
+      jailCompleteActions(player);
     }
   }
 }
@@ -577,8 +584,9 @@ function drawChanceOrChest(player) {
 }
 
 function movePlayer(player) {
-  var snakeEyes = getNewPosition(player);
+  var snakeEyes;
   if(player.jailed != true) {
+    snakeEyes = getNewPosition(player);
     payTax(player);
     drawChanceOrChest(player);
     landOnProperty(player);

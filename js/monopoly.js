@@ -1,5 +1,3 @@
-//TO:DO Make rolling snake eyes function in a way that actually makes sense e.g. not pay twice..
-
 /* KNOWN BUGS */
 // If you land on a chance card at position 36 and move 3 spaces back you don't draw a
 // community chest card (Not sure if this still applies, it's really fucking hard to test).
@@ -200,8 +198,6 @@ function checkOwnsEntireColor(player, position) {
       streetCount += 1;
     }
   }
-  console.log("Max streets: " + maxStreets);
-  console.log("Street count: " + streetCount);
   return streetCount == maxStreets;
 }
 
@@ -216,11 +212,11 @@ function buyHouse(player, position) {
     if(owner == player && player.cash >= housePrice) {
       if(numHouses < 5) {
         numHouses += 1;
-        console.log("You buy a house on this property");
+        console.log("You buy a house on " + targetProperty.name);
         if(numHouses == 5) {
-          console.log("You now have a hotel here.");
+          console.log("You now have a hotel on " + targetProperty.name);
         } else {
-          console.log("You now have " + numHouses + " houses here.");
+          console.log("You now have " + numHouses + " houses on " + targetProperty.name);
         }
       }
     }
@@ -260,11 +256,11 @@ function payTax(player) {
 }
 
 function askToBuy() {
-  //var wantsToBuy = prompt("Do you want to buy this property?").toLowerCase();
-  // return wantsToBuy == "y" || wantsToBuy == "yes";
+  var wantsToBuy = prompt("Do you want to buy this property?").toLowerCase();
+  return wantsToBuy == "y" || wantsToBuy == "yes";
 
   //!IMPORTANT Return true for testing purposes, uncomment above code and remove this when finished
-  return true;
+  // return true;
 }
 
 function buyUnsoldProperty(player, position) {
@@ -330,9 +326,11 @@ function goToJail(player) {
 
 // Corner Case Function: If the player has to be moved manually, make sure he/she still completes his actions as normal
 function completeActions(player) {
+  getNewPosition(player);
   landOnProperty(player, player.position);
   payTax(player);
   drawChanceOrChest(player);
+  buyUnsoldProperty(player, player.position);
 }
 
 function jailRoll(player) {
@@ -355,7 +353,6 @@ function jailRoll(player) {
     // If the player rolls snake eyes they get out of jail and move the distance rolled
     if(player.jailed == true && snakeEyes == true) {
       player.jailed = false;
-      player.position += diceSum;
       console.log("You rolled snake eyes! You are no longer jailed and move forward");
       completeActions(player);
     } else {
@@ -408,6 +405,7 @@ function getNewPosition(player) {
     player.position = newPosition;
   }
   console.log("New position: " + player.position);
+  return snakeEyes;
 }
 
 //TO:DO What does this one do??
@@ -579,7 +577,7 @@ function drawChanceOrChest(player) {
 }
 
 function movePlayer(player) {
-  getNewPosition(player);
+  var snakeEyes = getNewPosition(player);
   if(player.jailed != true) {
     payTax(player);
     drawChanceOrChest(player);
@@ -588,35 +586,40 @@ function movePlayer(player) {
   } else {
     jailRoll(player);
   }
+  if(snakeEyes == true) {
+    console.log("You rolled snake eyes and get to roll again");
+    movePlayer(player);
+  }
 }
 
-//The functions below are for testing purposes only
-
-function buyAllStreets(player) {
-  var streets = generateOnlyStreets();
-
-  // Sort an array numerically
-  // Can't belive this isn't a built in function in JavaScript
-  function sortNumber(a,b) {
-      return a - b;
-  }
-  streets.sort(sortNumber);
-  for(var i = 0; i < streets.length; i++) {
-    // Buy all the properties and a hotel on each
-    buyUnsoldProperty(player, streets[i]);
-  }
-  for(var i = 0; i < streets.length; i++) {
-    console.log(streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-    buyHouse(player, streets[i]);
-  }
-
-  players.player_2.cash = -50000;
-}
-
-function playGame() {
-  buyAllStreets(players.player_2);
-}
-
-playGame();
+// //The functions below are for testing purposes only
+//
+// function buyAllStreets(player) {
+//   var streets = generateOnlyStreets();
+//
+//   // Sort an array numerically
+//   // Can't belive this isn't a built in function in JavaScript
+//   function sortNumber(a,b) {
+//       return a - b;
+//   }
+//   streets.sort(sortNumber);
+//   for(var i = 0; i < streets.length; i++) {
+//     // Buy all the properties and a hotel on each
+//     buyUnsoldProperty(player, streets[i]);
+//   }
+//   for(var i = 0; i < streets.length; i++) {
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//     buyHouse(player, streets[i]);
+//   }
+//
+//   players.player_2.cash = -50000;
+// }
+//
+// function playGame() {
+//   buyAllStreets(players.player_2);
+// }
+//
+// playGame();

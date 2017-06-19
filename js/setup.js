@@ -179,8 +179,8 @@ function propertyRepairs(player, pricePerHouse, pricePerHotel) {
 
 // Create the players for the game
 var players = {
-  player_1: new Player("Morten", 500000, 0, [], [], [], false, 0),
-  player_2: new Player("Kjetil", 50000, 0, [], [], [], false, 0)
+  player_1: new Player("Morten", 1500, 0, [], [], [], false, 0),
+  player_2: new Player("Kjetil", 1500, 0, [], [], [], false, 0)
 };
 
 var bank = new Bank("bank", 500000, [], [], []);
@@ -358,11 +358,9 @@ var properties = {
   ],
   jail: [
     new Jail("Jail", 30, 0, function(player) {
-      goToJail(player);
-    })//,
-    // new Jail("Jail Visit", 10, 0, function(player) {
-    //   console.log("You are visiting jail, however you are not actually jailed");
-    // })
+    }),
+    new Jail("Jail Visit", 10, 0, function(player) {
+    })
   ],
   chance: [
     new ChanceProperty("Chance Red", 7),

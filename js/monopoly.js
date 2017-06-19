@@ -208,11 +208,11 @@ function buyHouse(player, position) {
     if(owner == player && player.cash >= housePrice) {
       if(numHouses < 5) {
         numHouses += 1;
-        console.log("You buy a house on " + targetProperty.name);
+        console.log(player.name + " buys a house on " + targetProperty.name);
         if(numHouses == 5) {
-          console.log("You now have a hotel on " + targetProperty.name);
+          console.log(player.name + " buys a hotel on " + targetProperty.name);
         } else {
-          console.log("You now have " + numHouses + " houses on " + targetProperty.name);
+          console.log(player.name + " has " + numHouses + " houses on " + targetProperty.name);
         }
       }
     }
@@ -280,9 +280,9 @@ function buyUnsoldProperty(player, position) {
         targetProperty.owner = player;
         targetProperty.sold = true;
         removeCash(player, propertyPrice);
-        console.log("You buy the property");
+        console.log(player.name + " buys the property");
       } else {
-      console.log("You choose not to buy the property.");
+      console.log(player.name + " chooses not to buy the property.");
     }
   }
 }
@@ -498,17 +498,23 @@ function landOnProperty(player) {
     console.log("Owner: " + owner.name);
     if(owner == bank) {
       console.log("The bank currently owns this property");
+      console.log("This property costs $" + targetProperty.price);
       buyUnsoldProperty(player, player.position);
     } else if(player == owner) {
       console.log("You own this property.")
     } else if(player != owner) {
       if(targetProperty.mortgaged != true) {
-        var price = getLandingPrice();
-        removeCash(player, price);
-        addCash(owner, price);
-        console.log("You landed on " + owner.name + "'s property.");
-        console.log("You pay: $" + price + " to stay there.");
-        console.log("You have: $" + player.cash + " left.");
+        var pos = player.position;
+        // There should be a more eloquent way to do this, but since getNewPosition()
+        // already return snake eyes I think this is the best approach.
+        if(pos != 40 && pos != 30 && pos != 20 && pos != 10) {
+          var price = getLandingPrice();
+          removeCash(player, price);
+          addCash(owner, price);
+          console.log("You landed on " + owner.name + "'s property.");
+          console.log("You pay: $" + price + " to stay there.");
+          console.log("You have: $" + player.cash + " left.");
+        }
       }
     }
   }
@@ -580,6 +586,7 @@ function drawChanceOrChest(player) {
 }
 
 function movePlayer(player) {
+  console.log("It is " + player.name + "'s turn.");
   var snakeEyes;
   if(player.jailed != true) {
     snakeEyes = getNewPosition(player);
@@ -629,10 +636,14 @@ function movePlayer(player) {
 // playGame();
 
 $(document).ready(function() {
-  $("#move-player-1").click(function() {
+  $("#move-player-1").on("click", function() {
     movePlayer(players.player_1);
+    $("#move-player-2").prop("disabled", false);
+    $("#move-player-1").prop("disabled", true);
   })
-  $("#move-player-2").click(function() {
+  $("#move-player-2").on("click", function() {
     movePlayer(players.player_2);
+    $("#move-player-1").prop("disabled", false);
+    $("#move-player-2").prop("disabled", true);
   })
 });

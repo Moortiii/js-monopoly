@@ -1,25 +1,91 @@
+/* CSS VARIABLES */
+
+:root {
+  --large: 15.395%;
+  --small: 7.69%;
+}
+
+/* Universal Styles */
+
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 body {
-  background: #333;
+  background: #fff;
+}
+
+/* Board Display Properties */
+
+.board {
+  width: 85vw;
+  height: 85vw;
+  border: 3px solid #333;
 }
 .cell {
-  margin: 0!important;
-  padding: 0!important;
-  border: 3px solid #fff;
-  width: 90px;
-  height: 75px;
+  display: inline-block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #333;
 }
-.container {
-  display: flex;
-  justify-content: center;
+.bottom {
+  height: 100%;
+  width: var(--small);
+  float: left;
 }
-.colorfield {
-  height: 10px;
+.top {
+  height: 100%;
+  width: var(--small);
+  float: left;
 }
+.middle {
+  width: 100%;
+  height: 100%;
+  display: block;
+  float: left;
+  clear: left;
+}
+.corner {
+  width: var(--large);
+  height: 100%;
+}
+
+/* Container styles */
+
+.left-middle-row {
+  float: left;
+  clear: left;
+  width: var(--large);
+  height: var(--small);
+}
+.right-middle-row {
+  float: right;
+  clear: right;
+  width: var(--large);
+  height: var(--small);
+}
+.top-row {
+  float: left;
+  clear: both;
+  width: 100%;
+  height: var(--large);
+}
+.bottom-row {
+  float: left;
+  clear: both;
+  width: 100%;
+  height: var(--large);
+}
+.middle-container {
+  height: 80%;
+  clear: both;
+}
+/* DIFFERENT COLORS */
+
 .red {
-  border-top: 15px solid #e74c3c;
+  border-bottom: 15px solid #e74c3c;
 }
 .brown {
   border-top: 15px solid #8e44ad;
@@ -28,15 +94,31 @@ body {
   border-top: 15px solid #3498db;
 }
 .pink {
-  border-top: 15px solid #ff4290;
+  border-right: 15px solid #ff4290;
 }
 .orange {
-  border-top: 15px solid #e67e22;
+  border-right: 15px solid #e67e22;
 }
-.title {
-  font-family: 'Georgia', sans-serif;
-  font-size: 14px;
+.yellow {
+  border-bottom: 15px solid #f1c40f;
+}
+.green {
+  border-left: 15px solid #2ecc71;
+}
+.dark-blue {
+  border-left: 15px solid #34495e;
+}
+
+/* Typography Styles */
+
+.streetname {
+  color: #333;
+  font-size: 16px;
+  font-family: sans-serif;
   text-align: center;
-  padding: 5px;
-  color: #e3e3e3;
+}
+.cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

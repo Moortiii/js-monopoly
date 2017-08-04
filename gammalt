@@ -1,0 +1,178 @@
+<!-- <button id="move-player-1">Move Player 1</button> -->
+<!-- <button id="move-player-2" disabled>Move Player 2</button> -->
+<!-- <table id="board">
+  <tr>
+    <td class="cell board-corner" id="cell-20"></td>
+    <td class="cell board-top" id="cell-21">
+      <div class="container red">
+        <h3 class="title">Strand</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-22"></td>
+    <td class="cell board-top" id="cell-23">
+      <div class="container red">
+        <h3 class="title">Fleet Street</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-24">
+      <div class="container red">
+        <h3 class="title">Trafalgar Square</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-25"></td>
+    <td class="cell board-top" id="cell-26"></td>
+    <td class="cell board-top" id="cell-27"></td>
+    <td class="cell board-top" id="cell-28"></td>
+    <td class="cell board-top" id="cell-29"></td>
+    <td class="cell board-corner" id="cell-30"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-19">
+      <div class="container orange">
+        <h3 class="title">Vine Street</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-31"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-18">
+      <div class="container orange">
+        <h3 class="title">Marlborough Street</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-32"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-17"></td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-33"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-16">
+      <div class="container orange">
+        <h3 class="title">Bow Street</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-34"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-15"></td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-35"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-14">
+      <div class="container pink">
+        <h3 class="title">Northumberland Road</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-36"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-13">
+      <div class="container pink">
+        <h3 class="title">Whitehall</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-37"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-12"></td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-38"></td>
+  </tr>
+  <tr>
+    <td class="cell board-left" id="cell-11">
+      <div class="container pink">
+        <h3 class="title">Pall Mall</h3>
+      </div>
+    </td>
+    <td colspan="9" class="board-center"></td>
+    <td class="cell board-right" id="cell-39"></td>
+  </tr>
+  <tr>
+    <td class="cell board-corner" id="cell-10"></td>
+    <td class="cell board-top" id="cell-9">
+      <div class="container light-blue">
+        <h3 class="title">Pentonville Road</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-8">
+      <div class="container light-blue">
+        <h3 class="title">Euston Road</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-7">
+    </td>
+    <td class="cell board-top" id="cell-6">
+      <div class="container light-blue">
+        <h3 class="title">The Angel Islington</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-5"></td>
+    <td class="cell board-top" id="cell-4">
+    </td>
+    <td class="cell board-top" id="cell-3">
+      <div class="container brown">
+        <h3 class="title">Whitechapel Road</h3>
+      </div>
+    </td>
+    <td class="cell board-top" id="cell-2"></td>
+    <td class="cell board-top" id="cell-1">
+      <div class="container brown">
+        <h3 class="title">Old Kent Road</h3>
+      </div>
+    </td>
+    <td class="cell board-corner" id="cell-0" colspan="2">
+      <div class="container">
+        <h3 class="title">START</h3>
+      </div>
+    </td>
+  </tr>
+</table> -->
+
+/*.cell {
+  margin: 0!important;
+  padding: 0!important;
+  border: 3px solid #fff;
+  width: 75px;
+  height: 100px;
+}
+.container {
+  display: flex;
+  justify-content: center;
+}
+.colorfield {
+  height: 10px;
+}*/
+
+/*.title {
+  font-family: 'Georgia', sans-serif;
+  font-size: 14px;
+  text-align: center;
+  padding: 5px;
+  color: #e3e3e3;
+}*/
+
+.bottom {
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+}
+.top {
+  border-bottom: 1px solid #333;
+  border-right: 1px solid #333;
+}
+.left {
+  border-right: 1px solid #333;
+}
+.right {
+  border-left: 1px solid #333;
+}
+.corner {
+  border: none;
+}

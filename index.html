@@ -1,160 +1,147 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.dom.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.11/addons/p5.sound.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="js/jquery-3.2.1.min.js"></script>
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
   <link rel="stylesheet" href="css/main.css">
 </head>
-
 <body>
-  <button id="move-player-1">Move Player 1</button>
-  <button id="move-player-2" disabled>Move Player 2</button>
-  <!-- <button id="movePlayer1">Move Player1</button>
-  <button id="buyProperty1">Buy Property1</button>
-  <button id="landOnProperty1">Player 1 land</button>
-  <button id="movePlayer2">Move Player2</button>
-  <button id="buyProperty2">Buy Property2</button>
-  <button id="landOnProperty2">Player 2 land</button> -->
-  <!-- <table id="board">
-    <tr>
-      <td class="cell board-corner" id="cell-20"></td>
-      <td class="cell board-top" id="cell-21">
-        <div class="container red">
-          <h3 class="title">Strand</h3>
+  <div class="board">
+    <div class="top-row">
+      <div class="cell top corner" id="cell-20">
+        <h3 class="streetname">20</h3>
+      </div>
+      <div class="cell top red" id="cell-21">
+        <h3 class="streetname">21</h3>
+      </div>
+      <div class="cell top" id="cell-22">
+        <h3 class="streetname">22</h3>
+      </div>
+      <div class="cell top red" id="cell-23">
+        <h3 class="streetname">23</h3>
+      </div>
+      <div class="cell top red" id="cell-24">
+        <h3 class="streetname">24</h3>
+      </div>
+      <div class="cell top" id="cell-25">
+        <h3 class="streetname">25</h3>
+      </div>
+      <div class="cell top yellow" id="cell-26">
+        <h3 class="streetname">26</h3>
+      </div>
+      <div class="cell top" id="cell-27">
+        <h3 class="streetname">27</h3>
+      </div>
+      <div class="cell top yellow" id="cell-28">
+        <h3 class="streetname">28</h3>
+      </div>
+      <div class="cell top yellow" id="cell-29">
+        <h3 class="streetname">29</h3>
+      </div>
+      <div class="cell top corner" id="cell-30">
+        <h3 class="streetname">30</h3>
+      </div>
+    </div>
+    <div class="middle-container">
+      <div class="left-middle-row">
+        <div class="cell middle left orange" id="cell-19">
+          <h3 class="streetname">19</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-22"></td>
-      <td class="cell board-top" id="cell-23">
-        <div class="container red">
-          <h3 class="title">Fleet Street</h3>
+        <div class="cell middle left orange" id="cell-18">
+          <h3 class="streetname">18</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-24">
-        <div class="container red">
-          <h3 class="title">Trafalgar Square</h3>
+        <div class="cell middle left" id="cell-17">
+          <h3 class="streetname">17</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-25"></td>
-      <td class="cell board-top" id="cell-26"></td>
-      <td class="cell board-top" id="cell-27"></td>
-      <td class="cell board-top" id="cell-28"></td>
-      <td class="cell board-top" id="cell-29"></td>
-      <td class="cell board-corner" id="cell-30"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-19">
-        <div class="container orange">
-          <h3 class="title">Vine Street</h3>
+        <div class="cell middle left orange" id="cell-16">
+          <h3 class="streetname">16</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-31"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-18">
-        <div class="container orange">
-          <h3 class="title">Marlborough Street</h3>
+        <div class="cell middle left" id="cell-15">
+          <h3 class="streetname">15</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-32"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-17"></td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-33"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-16">
-        <div class="container orange">
-          <h3 class="title">Bow Street</h3>
+        <div class="cell middle left pink" id="cell-14">
+          <h3 class="streetname">14</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-34"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-15"></td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-35"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-14">
-        <div class="container pink">
-          <h3 class="title">Northumberland Road</h3>
+        <div class="cell middle left pink" id="cell-13">
+          <h3 class="streetname">13</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-36"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-13">
-        <div class="container pink">
-          <h3 class="title">Whitehall</h3>
+        <div class="cell middle left" id="cell-12">
+          <h3 class="streetname">12</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-37"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-12"></td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-38"></td>
-    </tr>
-    <tr>
-      <td class="cell board-left" id="cell-11">
-        <div class="container pink">
-          <h3 class="title">Pall Mall</h3>
+        <div class="cell middle left pink" id="cell-11">
+          <h3 class="streetname">11</h3>
         </div>
-      </td>
-      <td colspan="9" class="board-center"></td>
-      <td class="cell board-right" id="cell-39"></td>
-    </tr>
-    <tr>
-      <td class="cell board-corner" id="cell-10"></td>
-      <td class="cell board-top" id="cell-9">
-        <div class="container light-blue">
-          <h3 class="title">Pentonville Road</h3>
+      </div>
+      <div class="right-middle-row">
+        <div class="cell middle right green" id="cell-31">
+          <h3 class="streetname">31</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-8">
-        <div class="container light-blue">
-          <h3 class="title">Euston Road</h3>
+        <div class="cell middle right" id="cell-32">
+          <h3 class="streetname">32</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-7">
-      </td>
-      <td class="cell board-top" id="cell-6">
-        <div class="container light-blue">
-          <h3 class="title">The Angel Islington</h3>
+        <div class="cell middle right green" id="cell-33">
+          <h3 class="streetname">33</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-5"></td>
-      <td class="cell board-top" id="cell-4">
-      </td>
-      <td class="cell board-top" id="cell-3">
-        <div class="container brown">
-          <h3 class="title">Whitechapel Road</h3>
+        <div class="cell middle right green" id="cell-34">
+          <h3 class="streetname">34</h3>
         </div>
-      </td>
-      <td class="cell board-top" id="cell-2"></td>
-      <td class="cell board-top" id="cell-1">
-        <div class="container brown">
-          <h3 class="title">Old Kent Road</h3>
+        <div class="cell middle right" id="cell-35">
+          <h3 class="streetname">35</h3>
         </div>
-      </td>
-      <td class="cell board-corner" id="cell-0">
-        <div class="container">
-          <h3 class="title">START</h3>
+        <div class="cell middle right" id="cell-36">
+          <h3 class="streetname">36</h3>
         </div>
-      </td>
-    </tr>
-  </table> -->
+        <div class="cell middle right dark-blue" id="cell-37">
+          <h3 class="streetname">37</h3>
+        </div>
+        <div class="cell middle right" id="cell-38">
+          <h3 class="streetname">38</h3>
+        </div>
+        <div class="cell middle right dark-blue" id="cell-39">
+          <h3 class="streetname">39</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-row">
+      <div class="cell bottom corner" id="cell-10">
+        <h3 class="streetname">10</h3>
+      </div>
+      <div class="cell bottom light-blue" id="cell-9">
+        <h3 class="streetname">9</h3>
+      </div>
+      <div class="cell bottom light-blue" id="cell-8">
+        <h3 class="streetname">8</h3>
+      </div>
+      <div class="cell bottom" id="cell-7">
+        <h3 class="streetname">7</h3>
+      </div>
+      <div class="cell bottom light-blue" id="cell-6">
+        <h3 class="streetname">6</h3>
+      </div>
+      <div class="cell bottom" id="cell-5">
+        <h3 class="streetname">5</h3>
+      </div>
+      <div class="cell bottom" id="cell-4">
+        <h3 class="streetname">4</h3>
+      </div>
+      <div class="cell bottom brown" id="cell-3">
+        <h3 class="streetname">3</h3>
+      </div>
+      <div class="cell bottom" id="cell-2">
+        <h3 class="streetname">2</h3>
+      </div>
+      <div class="cell bottom brown" id="cell-1">
+        <h3 class="streetname">1</h3>
+      </div>
+      <div class="cell bottom corner" id="cell-0">
+        <h3 class="streetname">0</h3>
+      </div>
+    </div>
+  </div>
   <script src="js/setup.js"></script>
   <script src="js/monopoly.js"></script>
-  <script type="text/javascript" href="js/scripts.js"></script>
 </body>
 </html>

@@ -21,6 +21,19 @@
 //   }
 // }
 
+function drawPlayerPosition(position) {
+  $(document).ready(function() {
+    $("#cell-" + position).css("border", "5px solid teal");
+  })
+}
+
+function removePlayerPosition(position) {
+  $(document).ready(function() {
+    $("#cell-" + position).css("border", "1px solid #333");
+  })
+}
+
+
 // Returns a property object given an arbitrary position
 function returnProperty(position) {
   var property = Object.values(properties);
@@ -383,6 +396,7 @@ function getNewPosition(player) {
   var snakeEyes = diceRoll[1];
 
   var currentPosition = player.position;
+  removePlayerPosition(currentPosition);
   var newPosition = currentPosition + moveDistance;
   switch(newPosition) {
     case 40:
@@ -408,6 +422,7 @@ function getNewPosition(player) {
     player.position = newPosition;
   }
   console.log("New position: " + player.position);
+  drawPlayerPosition(newPosition);
   return snakeEyes;
 }
 
